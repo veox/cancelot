@@ -20,10 +20,10 @@ class BidInfo(object):
 bids = {}
 
 # TODO: can be replaced by lambdas in `handlers` when proven to work
-def handle_newbid(idx):
+def handle_newbid(idx, event):
     bids[idx] = BidInfo(event)
     return
-def handle_bidrevealed(idx):
+def handle_bidrevealed(idx, event):
     del bids[idx]
     return
 
@@ -51,7 +51,7 @@ def check_receipt_for_topics(receipt, topics):
             #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
             #       'has event', topic)
             idx = receipt['from'] + event['topics'][1]
-            handlers[topic](event)
+            handlers[topic](idx, event)
     return
 
 def check_tx(tx):
