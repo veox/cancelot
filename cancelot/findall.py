@@ -84,6 +84,9 @@ while blocknum <= web3.eth.blockNumber:
             check_tx(tx)
 
 # print those that have not been revealed
+cancan = 0
 for _, bidinfo in bids.iteritems():
     if now - int(bidinfo.timeexpires) < 0:
-        print('Bid could be cancelled:', bidinfo.bidder, bidinfo.seal)
+        cancan += 1
+        print('Bid can be cancelled:', bidinfo.bidder, bidinfo.seal)
+print('Total:', cancan)
