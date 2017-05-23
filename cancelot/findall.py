@@ -8,12 +8,12 @@ from web3 import Web3, IPCProvider
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 startblock = 3648565
 
-def handle_newbid():
-    print('STUB in newbid')
+def handle_newbid(receipt):
+    print('STUB newbid')
     return
 
-def handle_bidrevealed():
-    print('STUB in bidrevealed')
+def handle_bidrevealed(receipt):
+    print('STUB bidrevealed')
     return
 
 # topics: fingerprints -> event name
@@ -27,21 +27,18 @@ handlers = {
     'BidRevealed': handle_bidrevealed
 }
 
-def handle(topic):
-    handlers[topic]()
-    return
-
 def check_receipt_for_topics(receipt, topics):
     logs = receipt['logs']
     # iterate through events, looking for bids placed/revealed fingerprint
     for entry in logs:
         fp = entry['topics'][0]
         topic = topics[fp] if topics.get(fp) else False
+        # handle matches
         if topic:
-            print('tx', tx['hash'],
-                  'in block', tx['blockHash'], '(' + str(tx['blockNumber']) + ')',
+            print('tx', receipt['transactionHash'],
+                  'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
                   'has event', topic)
-            handle(topic)
+            handlers[topic](receipt)
     return
 
 web3 = Web3(IPCProvider())
