@@ -37,14 +37,14 @@ def check_tx(tx):
     return
 
 
-blocknum = startblock
+blocknum = startblock - 1
 while blocknum <= web3.eth.blockNumber:
+    blocknum += 1
     txcount = web3.eth.getBlockTransactionCount(blocknum)
     if txcount == 0: continue
+
     # iterate over transactions
     for txi in range(txcount):
         tx = web3.eth.getTransactionFromBlock(blocknum, hex(txi))
         if tx['to'] == registrar:
             check_tx(tx)
-
-    blocknum += 1
