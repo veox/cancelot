@@ -20,13 +20,27 @@ class BidInfo(object):
 bids = {}
 
 # TODO: can be replaced by lambdas in `handlers` when proven to work
-def handle_newbid(idx, event):
+def handle_newbid(bidder, event):
+    seal = event['topics'][1]
+    idx =  bidder + seal
     bids[idx] = BidInfo(event)
-    print('Bid', idx, 'added', '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
+    print('Bid from', bidder, 'with seal', seal, 'added',
+          '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
-def handle_bidrevealed(idx, event):
+def handle_bidrevealed(bidder, event):
+    # get salt from transaction data - it's not logged :/
+    # FIXME: using object available from calling function's scope
+    salt = '0x' + tx['input'][-64:] # 32 bytes from the end
+    # get other missing values from logged event
+    thishash = event['topics'][1]
+    value = event['data'][0:2+64] # 2 for '0x', 64 for bytes(32).hex()
+    # calculate seal (used as part of index)
+    seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
+    # finally, formulate it
+    idx = bidder + seal
     del bids[idx]
-    print('Bid', idx, 'removed', '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
+    print('Bid from', bidder, 'with seal', seal, 'removed',
+          '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 
 # fingerprint -> event name
@@ -52,8 +66,7 @@ def check_receipt_for_topics(receipt, topics):
             # print('tx', receipt['transactionHash'],
             #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
             #       'has event', topic)
-            idx = receipt['from'] + event['topics'][1]
-            handlers[topic](idx, event)
+            handlers[topic](receipt['from'], event)
     return
 
 def check_tx(tx):
