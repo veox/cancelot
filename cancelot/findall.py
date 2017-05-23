@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # find all transactions with a specific "fingerprint" in logs
 
+import pprint
 import time
 
 from web3 import Web3, IPCProvider
@@ -16,10 +17,9 @@ class BidInfo(object):
         self.seal = event['topics'][1]
         return
 
-# msg.sender+sealedBid -> deed info
+# msg.sender+sealedBid -> bid info
 bids = {}
 
-# TODO: can be replaced by lambdas in `handlers` when proven to work
 def handle_newbid(bidder, event):
     seal = event['topics'][1]
     idx =  bidder + seal
@@ -49,6 +49,9 @@ def handle_bidrevealed(bidder, event):
         print('value:   ', value)
         print('salt:    ', salt)
         print('seal:    ', seal)
+        print('='*163)
+        pprint.pprint(tx)
+        print('='*163)
         raise e
 
     print('Bid from', bidder, 'with seal', seal, 'removed',
