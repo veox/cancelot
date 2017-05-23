@@ -33,12 +33,23 @@ def handle_bidrevealed(bidder, event):
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
     # get other missing values from logged event
     thishash = event['topics'][1]
-    value = event['data'][0:2+64] # 2 for '0x', 64 for bytes(32).hex()
+    value = event['data'][:2+64] # 2 for '0x', 64 for bytes(32).hex()
     # calculate seal (used as part of index)
     seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
     # finally, formulate it
     idx = bidder + seal
-    del bids[idx]
+
+    try:
+        del bids[idx]
+    except KeyError as e:
+        print('===================================== DANG!.. =====================================')
+        print('thishash:', thishash)
+        print('bidder:  ', bidder)
+        print('value:   ', value)
+        print('salt:    ', salt)
+        print('seal:    ', seal)
+        raise e
+
     print('Bid from', bidder, 'with seal', seal, 'removed',
           '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
