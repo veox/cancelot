@@ -56,7 +56,7 @@ def handle_bidrevealed(bidder, event):
         print('='*163)
         raise e
 
-    print('Bid from', bidder, 'with seal', seal, 'removed',
+    print('Bid from', bidder, 'with seal', seal, 'remvd',
           '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 
