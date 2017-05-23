@@ -8,15 +8,28 @@ from web3 import Web3, IPCProvider
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 startblock = 3648565
 
+def handle_newbid():
+    print('STUB in newbid')
+    return
+
+def handle_bidrevealed():
+    print('STUB in bidrevealed')
+    return
+
 # topics: fingerprints -> event name
 topics = {
     #'0x87e97e825a1d1fa0c54e1d36c7506c1dea8b1efd451fe68b000cf96f7cf40003': 'AuctionStarted',
     '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': 'NewBid',
     '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': 'BidRevealed'
 }
+handlers = {
+    'NewBid': handle_newbid,
+    'BidRevealed': handle_bidrevealed
+}
 
-
-web3 = Web3(IPCProvider())
+def handle(topic):
+    handlers[topic]()
+    return
 
 def check_receipt_for_topics(receipt, topics):
     logs = receipt['logs']
@@ -28,7 +41,10 @@ def check_receipt_for_topics(receipt, topics):
             print('tx', tx['hash'],
                   'in block', tx['blockHash'], '(' + str(tx['blockNumber']) + ')',
                   'has event', topic)
+            handle(topic)
     return
+
+web3 = Web3(IPCProvider())
 
 def check_tx(tx):
     receipt = web3.eth.getTransactionReceipt(tx['hash'])
