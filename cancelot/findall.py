@@ -11,9 +11,8 @@ startblock = 3648565
 
 class BidInfo(object):
     def __init__(self, event):
-        self.blockincluded = event['blockNumber']
-        self.timeexpires = web3.eth.getBlock(self.blockincluded)['timestamp'] + 1209600 # magicnum: 2 weeks
-        self.bidder = event['from']
+        self.timeexpires = web3.eth.getBlock(event['blockNumber'])['timestamp'] + 1209600 # magicnum: 2 weeks
+        self.bidder = event['topics'][2]
         self.seal = event['topics'][1]
         return
 
@@ -51,7 +50,7 @@ def check_receipt_for_topics(receipt, topics):
             # print('tx', receipt['transactionHash'],
             #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
             #       'has event', topic)
-            idx = event['from'] + event['topics'][1]
+            idx = receipt['from'] + event['topics'][1]
             handlers[topic](event)
     return
 
