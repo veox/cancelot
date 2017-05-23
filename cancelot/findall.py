@@ -22,11 +22,11 @@ bids = {}
 # TODO: can be replaced by lambdas in `handlers` when proven to work
 def handle_newbid(idx, event):
     bids[idx] = BidInfo(event)
-    print('Bid', idx, 'added', '(block ' + str(event['blockNumber']) + ').')
+    print('Bid', idx, 'added', '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 def handle_bidrevealed(idx, event):
     del bids[idx]
-    print('Bid', idx, 'removed', '(block ' + str(event['blockNumber']) + ').')
+    print('Bid', idx, 'removed', '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 
 # fingerprint -> event name
