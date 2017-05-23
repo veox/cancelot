@@ -4,32 +4,28 @@
 import time
 
 from web3 import Web3, IPCProvider
+web3 = Web3(IPCProvider())
 
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 startblock = 3648565
 
-class DeedInfo(object):
-    def __init__(self, deedaddr):
-        self.created = TODO()
-        self.expires = TODO()
-        self.bidder = TODO()
-        self.seal = TODO()
+class BidInfo(object):
+    def __init__(self, event):
+        self.blockincluded = event['blockNumber']
+        self.timeexpires = web3.eth.getBlock(self.blockincluded)['timestamp'] + 1209600 # magicnum: 2 weeks
+        self.bidder = event['from']
+        self.seal = event['topics'][1]
         return
 
-# deed address -> deed info
-deeds = {}
+# msg.sender+sealedBid -> deed info
+bids = {}
 
-def get_deed_address(msgsender, seal):
-    return MAGIC(registrar.sealedBids[msg.sender][seal])
-
-def handle_newbid(event):
-    deedaddr = get_deed_address(event['from'], event['topics'][1])
-    deeds[deedaddr] = DeedInfo(deedaddr)
+# TODO: can be replaced by lambdas in `handlers` when proven to work
+def handle_newbid(idx):
+    bids[idx] = BidInfo(event)
     return
-
-def handle_bidrevealed(event):
-    deedaddr = get_deed_address(event['from'], event['topics'][1])
-    del deeds[deedaddr]
+def handle_bidrevealed(idx):
+    del bids[idx]
     return
 
 # fingerprint -> event name
@@ -55,10 +51,9 @@ def check_receipt_for_topics(receipt, topics):
             # print('tx', receipt['transactionHash'],
             #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
             #       'has event', topic)
+            idx = event['from'] + event['topics'][1]
             handlers[topic](event)
     return
-
-web3 = Web3(IPCProvider())
 
 def check_tx(tx):
     receipt = web3.eth.getTransactionReceipt(tx['hash'])
