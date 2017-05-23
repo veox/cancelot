@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # find all transactions with a specific "fingerprint" in logs
 
+import pickle
 import pprint
 import time
 
@@ -32,6 +33,8 @@ def idx_bidcancelled(event):
     seal = event['topics'][1]
     bidder = event['topics'][2][-40:] # 20 bytes from the end
     return bidder + seal
+
+# TODO: idx_bidrevealed()
 
 def handle_bidrevealed(bidder, event):
     # FIXME: we've already retrieved this before!
@@ -130,6 +133,10 @@ while blocknum <= web3.eth.blockNumber:
         tx = web3.eth.getTransactionFromBlock(blocknum, hex(txi))
         if tx['to'] == registrar:
             check_tx(tx)
+
+# try writing to file (run takes an hour...)
+with open(str(now) + '.pickle', 'w') as fd:
+    pickle.dump(bids, fd)
 
 # print those that have not been revealed
 cancan = 0
