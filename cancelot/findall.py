@@ -20,8 +20,8 @@ def check_tx(tx):
     receipt = web3.eth.getTransactionReceipt(tx['hash'])
     logs = receipt['logs']
 
-    # skip tx if no event logs (probably OOGed)
-    if len(logs) == 0: continue
+    # short-circuit if no event logs (probably OOGed)
+    if len(logs) == 0: return
 
     # iterate through events, looking for bids placed/revealed fingerprint
     for l in logs:
