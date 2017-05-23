@@ -28,13 +28,14 @@ def handle_newbid(bidder, event):
           '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 def handle_bidrevealed(bidder, event):
-    # get salt from transaction data - it's not logged :/
     # FIXME: we've already retrieved this before!
     tx = web3.eth.getTransaction(event['transactionHash'])
+    # get salt from transaction data - it's not logged :/
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
-    # get other missing values from logged event
+    # get value from here, too - logged one might be changed due to `value = min(_value, bid.value())`
+    value = '0x' + tx['input'][2+64:2+64+64] # 2 for '0x', 64 for bytes(32).hex()
+    # get other from logged event
     thishash = event['topics'][1]
-    value = event['data'][:2+64] # 2 for '0x', 64 for bytes(32).hex()
     # calculate seal (used as part of index)
     seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
     # finally, formulate it
