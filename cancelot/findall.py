@@ -67,6 +67,10 @@ def check_tx(tx):
     return
 
 
+#
+now = int(time.time())
+
+# read in
 blocknum = startblock - 1
 while blocknum <= web3.eth.blockNumber:
     blocknum += 1
@@ -78,3 +82,8 @@ while blocknum <= web3.eth.blockNumber:
         tx = web3.eth.getTransactionFromBlock(blocknum, hex(txi))
         if tx['to'] == registrar:
             check_tx(tx)
+
+# print those that have not been revealed
+for _, bidinfo in bids.iteritems():
+    if now - int(bidinfo.timeexpires) < 0:
+        print('Bid could be cancelled:', bidinfo.bidder, bidinfo.seal)
