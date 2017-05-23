@@ -9,28 +9,27 @@ registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 startblock = 3648565
 
 class DeedInfo(object):
-    def __init__(self):
-        pass
+    def __init__(self, deedaddr):
+        self.created = TODO()
+        self.expires = TODO()
+        self.bidder = TODO()
+        self.seal = TODO()
+        return
 
-# address -> DeedInfo
+# deed address -> deed info
 deeds = {}
 
-def extract_bidinfo(receipt):
-    # TODO
-    return addr, info
+def get_deed_address(msgsender, seal):
+    return MAGIC(registrar.sealedBids[msg.sender][seal])
 
-def extract_revealinfo(receipt):
-    #TODO
-    return addr
-
-def handle_newbid(receipt):
-    address, deedinfo = extract_bidinfo(receipt)
-    deeds[address] = deedinfo
+def handle_newbid(event):
+    deedaddr = get_deed_address(event['from'], event['topics'][1])
+    deeds[deedaddr] = DeedInfo(deedaddr)
     return
 
-def handle_bidrevealed(receipt):
-    address = extract_revealinfo(receipt)
-    del deeds[address]
+def handle_bidrevealed(event):
+    deedaddr = get_deed_address(event['from'], event['topics'][1])
+    del deeds[deedaddr]
     return
 
 # fingerprint -> event name
@@ -39,6 +38,7 @@ topics = {
     '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': 'NewBid',
     '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': 'BidRevealed'
 }
+# event name -> handler function
 handlers = {
     'NewBid': handle_newbid,
     'BidRevealed': handle_bidrevealed
@@ -47,15 +47,15 @@ handlers = {
 def check_receipt_for_topics(receipt, topics):
     logs = receipt['logs']
     # iterate through events, looking for bids placed/revealed fingerprint
-    for entry in logs:
-        fp = entry['topics'][0]
+    for event in logs:
+        fp = event['topics'][0]
         topic = topics[fp] if topics.get(fp) else False
         # handle matches
         if topic:
             # print('tx', receipt['transactionHash'],
             #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
             #       'has event', topic)
-            handlers[topic](receipt)
+            handlers[topic](event)
     return
 
 web3 = Web3(IPCProvider())
