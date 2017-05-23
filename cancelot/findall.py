@@ -29,7 +29,8 @@ def handle_newbid(bidder, event):
     return
 def handle_bidrevealed(bidder, event):
     # get salt from transaction data - it's not logged :/
-    # FIXME: using object available from calling function's scope
+    # FIXME: we've already retrieved this before!
+    tx = web3.eth.getTransaction(event['transactionHash'])
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
     # get other missing values from logged event
     thishash = event['topics'][1]
@@ -42,7 +43,7 @@ def handle_bidrevealed(bidder, event):
     try:
         del bids[idx]
     except KeyError as e:
-        print('===================================== DANG!.. =====================================')
+        print('='*77 + ' DANG!.. ' + '='*77)
         print('thishash:', thishash)
         print('bidder:  ', bidder)
         print('value:   ', value)
