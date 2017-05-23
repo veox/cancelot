@@ -27,6 +27,12 @@ def handle_newbid(bidder, event):
     print('Bid from', bidder, 'with seal', seal, 'added',
           '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
+
+def idx_bidcancelled(event):
+    seal = event['topics'][1]
+    bidder = event['topics'][2][-40:] # 20 bytes from the end
+    return bidder + seal
+
 def handle_bidrevealed(bidder, event):
     # FIXME: we've already retrieved this before!
     tx = web3.eth.getTransaction(event['transactionHash'])
@@ -42,19 +48,31 @@ def handle_bidrevealed(bidder, event):
     # finally, formulate it
     idx = bidder + seal
 
+    # FIXME: ugly nested
     try:
         del bids[idx]
     except KeyError as e:
-        print('='*77 + ' DANG!.. ' + '='*77)
-        print('thishash:', thishash)
-        print('bidder:  ', bidder)
-        print('value:   ', value)
-        print('salt:    ', salt)
-        print('seal:    ', seal)
-        print('='*163)
-        pprint.pprint(tx)
-        print('='*163)
-        raise e
+        # might be "external cancellation", try that...
+        try:
+            del bids[idx_bidcancelled(event)]
+        except KeyError as ee:
+            print('='*77 + ' CRAP!!! ' + '='*77)
+            print('idx:     ', idx_bidcancelled(event))
+            print('='*163)
+            pprint.pprint(event)
+            print('='*163)
+            raise ee
+        # print('='*77 + ' DANG!.. ' + '='*77)
+        # print('thishash:', thishash)
+        # print('bidder:  ', bidder)
+        # print('value:   ', value)
+        # print('salt:    ', salt)
+        # print('seal:    ', seal)
+        # print('idx:     ', idx)
+        # print('='*163)
+        # pprint.pprint(tx)
+        # print('='*163)
+        # raise e
 
     print('Bid from', bidder, 'with seal', seal, 'remvd',
           '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
