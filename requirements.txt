@@ -1,1 +1,2 @@
 populus>=1.6.8
+web3
