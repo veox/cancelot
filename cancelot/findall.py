@@ -33,8 +33,9 @@ def handle_bidrevealed(bidder, event):
     # get salt from transaction data - it's not logged :/
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
     # get value from here, too - logged one might be changed due to `value = min(_value, bid.value())`
-    value = '0x' + tx['input'][2+64:2+64+64] # 2 for '0x', 64 for bytes(32).hex()
-    # get other from logged event
+    _offset = 2+8+64 # 2 for '0x', 8 for function signature, 64 for bytes(32).hex() hash
+    value = '0x' + tx['input'][_offset:_offset+64]
+    # get other from logged event (FIXME: get from tx, too?.. what the hell...)
     thishash = event['topics'][1]
     # calculate seal (used as part of index)
     seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
