@@ -14,6 +14,7 @@ enslaunchblock = 3648565
 
 class BidInfo(object):
     def __init__(self, event):
+        self.blockadded = event['blockNumber']
         self.timeexpires = web3.eth.getBlock(event['blockNumber'])['timestamp'] + 1209600 # magicnum: 2 weeks
         self.bidder = event['topics'][2] # FIXME: remove zero-padded from front
         self.seal = event['topics'][1]
