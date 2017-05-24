@@ -127,7 +127,7 @@ def load_pickled_bids(filename):
     with open(filename, 'rb') as fd:
         bids = pickle.load(fd)
         print('<<<<< Loaded', len(bids), 'bids')
-    return bids, blocknum
+    return bids, blocknum # FIXME: hidden return of `blocknum`
 
 def pickle_bids(bids, starttime = int(time.time()), blocknum = 0):
     # 1495630192-3759000.pickle
@@ -150,7 +150,7 @@ def main():
     # log/state filenames and loop limiting
     starttime = int(time.time())
     startblock = web3.eth.blockNumber
-    # start one block behind, to capture the `enslaunchblock` with increment-first loop
+    # "start" one block behind, to capture the `enslaunchblock` with increment-first loop
     blocknum = enslaunchblock - 1
 
     # msg.sender+sealedBid -> bid info
@@ -175,15 +175,15 @@ def main():
         # write to file once in a while (full run takes an hour or more...)
         if int(blocknum)%1000 == 0:
             pickle_bids(bids, starttime, blocknum)
-        # while loop ends
+    # while loop ends
 
-    # print those that have not been revealed
     print('Cancellation candidates:')
     print('    ', cancan(bids, endtime = starttime), '(at script start time)')
     print('    ', cancan(bids, endtime = int(time.time())), '(now)')
     print('    ', cancan(bids, endtime = int(time.time()) + 60*15), '(in the following fifteen minutes)')
     print('    ', cancan(bids, endtime = int(time.time()) + 60*60), '(in the following hour)')
     print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24), '(in the following day)')
+
     return # main()
 
 if __name__ == '__main__':
