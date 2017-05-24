@@ -128,8 +128,10 @@ def main():
     # use existing pickle if provided
     if len(sys.argv) == 2:
         filename = str(sys.argv[1])
+        print('>>>>> Using pickle', filename)
         # extract from a name like `1495630192-3759000.pickle`
         blocknum = int(filename.split('.')[0].split('-')[1])
+        print('>>>>> Set blocknum to', blocknum)
         with open(filename, 'rb') as fd:
             bids = pickle.load(fd)
 
