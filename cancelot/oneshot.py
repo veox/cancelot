@@ -165,7 +165,7 @@ def main():
         if timediff >= 0:
             cancan += 1
             print('Cancan bidder:', bidinfo.bidder, 'seal:', bidinfo.seal, 'timediff:', timediff)
-            print('Total:', cancan)
+    print('Total:', cancan)
     return # main()
 
 if __name__ == '__main__':
