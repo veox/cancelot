@@ -32,7 +32,7 @@ def handle_newbid(bidder, event):
 def idx_bidcancelled(event):
     seal = event['topics'][1]
     bidder = event['topics'][2][-40:] # 20 bytes from the end
-    return bidder + seal
+    return '0x' + bidder + seal # TODO: get these '0x' under control, will ya?..
 
 # TODO: idx_bidrevealed()
 
