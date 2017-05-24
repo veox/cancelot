@@ -3,6 +3,7 @@
 
 import pickle
 import pprint
+import sys
 import time
 
 from web3 import Web3, IPCProvider
@@ -121,9 +122,16 @@ def check_tx(tx):
 # log/state filenames and loop limiting
 starttime = int(time.time())
 startblock = web3.eth.blockNumber
-
-# read in
+# start one block behind, just in case
 blocknum = enslaunchblock - 1
+
+# use existing pickle if provided
+if len(argv) == 2:
+    filename = str(sys.argv[1])
+    blocknum = filename.split('.')[0].split('-')[1]
+    with open(filename, 'rb') as fd:
+        bids = pickle.load(fd)
+
 while blocknum <= startblock:
     blocknum += 1
     txcount = web3.eth.getBlockTransactionCount(blocknum)
@@ -144,7 +152,7 @@ while blocknum <= startblock:
 
 # print those that have not been revealed
 cancan = 0
-for _, bidinfo in bids.iteritems():
+for _, bidinfo in bids.items():
     if starttime - int(bidinfo.timeexpires) < 0:
         cancan += 1
         print('Bid can be cancelled:', bidinfo.bidder, bidinfo.seal)
