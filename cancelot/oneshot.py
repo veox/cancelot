@@ -12,9 +12,6 @@ web3 = Web3(IPCProvider())
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
 
-# msg.sender+sealedBid -> bid info
-bids = {}
-
 class BidInfo(object):
     def __init__(self, event):
         self.timeexpires = web3.eth.getBlock(event['blockNumber'])['timestamp'] + 1209600 # magicnum: 2 weeks
@@ -22,7 +19,7 @@ class BidInfo(object):
         self.seal = event['topics'][1]
         return
 
-def handle_newbid(bidder, event):
+def handle_newbid(bidder, event, bids):
     seal = event['topics'][1]
     idx =  bidder + seal
     bids[idx] = BidInfo(event)
@@ -37,7 +34,7 @@ def idx_bidcancelled(event):
 
 # TODO: idx_bidrevealed()
 
-def handle_bidrevealed(bidder, event):
+def handle_bidrevealed(bidder, event, bids):
     # FIXME: we've already retrieved this before!
     tx = web3.eth.getTransaction(event['transactionHash'])
     # get salt from transaction data - it's not logged :/
@@ -94,7 +91,7 @@ handlers = {
     'BidRevealed': handle_bidrevealed
 }
 
-def check_receipt_for_topics(receipt, topics):
+def check_receipt_for_topics(receipt, topics, bids):
     logs = receipt['logs']
     # iterate through events, looking for bids placed/revealed fingerprint
     for event in logs:
@@ -105,16 +102,16 @@ def check_receipt_for_topics(receipt, topics):
             # print('tx', receipt['transactionHash'],
             #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
             #       'has event', topic)
-            handlers[topic](receipt['from'], event)
+            handlers[topic](receipt['from'], event, bids)
     return
 
-def check_tx(tx):
+def check_tx(tx, bids):
     receipt = web3.eth.getTransactionReceipt(tx['hash'])
 
     # short-circuit if no event logs (probably OOGed)
     if len(receipt['logs']) == 0: return
 
-    check_receipt_for_topics(receipt, topics)
+    check_receipt_for_topics(receipt, topics, bids)
 
     return
 
@@ -124,6 +121,9 @@ def main():
     startblock = web3.eth.blockNumber
     # start one block behind, just in case
     blocknum = enslaunchblock - 1
+
+    # msg.sender+sealedBid -> bid info
+    bids = {}
 
     # use existing pickle if provided
     if len(sys.argv) == 2:
@@ -144,7 +144,7 @@ def main():
         for txi in range(txcount):
             tx = web3.eth.getTransactionFromBlock(blocknum, hex(txi))
             if tx['to'] == registrar:
-                check_tx(tx)
+                check_tx(tx, bids)
 
         # write to file once in a while (full run takes an hour or more...)
         if int(blocknum)%1000 == 0:
