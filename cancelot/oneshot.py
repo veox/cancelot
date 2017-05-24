@@ -118,43 +118,48 @@ def check_tx(tx):
 
     return
 
+def main():
+    # log/state filenames and loop limiting
+    starttime = int(time.time())
+    startblock = web3.eth.blockNumber
+    # start one block behind, just in case
+    blocknum = enslaunchblock - 1
 
-# log/state filenames and loop limiting
-starttime = int(time.time())
-startblock = web3.eth.blockNumber
-# start one block behind, just in case
-blocknum = enslaunchblock - 1
+    # use existing pickle if provided
+    if len(sys.argv) == 2:
+        filename = str(sys.argv[1])
+        # extract from a name like `1495630192-3759000.pickle`
+        blocknum = int(filename.split('.')[0].split('-')[1])
+        with open(filename, 'rb') as fd:
+            bids = pickle.load(fd)
 
-# use existing pickle if provided
-if len(sys.argv) == 2:
-    filename = str(sys.argv[1])
-    # extract from a name like `1495630192-3759000.pickle`
-    blocknum = int(filename.split('.')[0].split('-')[1])
-    with open(filename, 'rb') as fd:
-        bids = pickle.load(fd)
+    while blocknum <= startblock:
+        blocknum += 1
+        txcount = web3.eth.getBlockTransactionCount(blocknum)
+        if txcount == 0: continue
 
-while blocknum <= startblock:
-    blocknum += 1
-    txcount = web3.eth.getBlockTransactionCount(blocknum)
-    if txcount == 0: continue
+        # iterate over transactions
+        for txi in range(txcount):
+            tx = web3.eth.getTransactionFromBlock(blocknum, hex(txi))
+            if tx['to'] == registrar:
+                check_tx(tx)
 
-    # iterate over transactions
-    for txi in range(txcount):
-        tx = web3.eth.getTransactionFromBlock(blocknum, hex(txi))
-        if tx['to'] == registrar:
-            check_tx(tx)
+        # write to file once in a while (full run takes an hour or more...)
+        if int(blocknum)%1000 == 0:
+            filename = str(starttime) + '-' + str(blocknum) + '.pickle'
+            print('>>>>> Writing bids state to', filename)
+            with open(filename, 'wb') as fd:
+                pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
+        # while loop ends
 
-    # write to file once in a while (full run takes an hour or more...)
-    if int(blocknum)%1000 == 0:
-        filename = str(starttime) + '-' + str(blocknum) + '.pickle'
-        print('>>>>> Writing bids state to', filename)
-        with open(filename, 'wb') as fd:
-            pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
+    # print those that have not been revealed
+    cancan = 0
+    for _, bidinfo in bids.items():
+        if starttime - int(bidinfo.timeexpires) < 0:
+            cancan += 1
+            print('Bid can be cancelled:', bidinfo.bidder, bidinfo.seal)
+            print('Total:', cancan)
+    return # main()
 
-# print those that have not been revealed
-cancan = 0
-for _, bidinfo in bids.items():
-    if starttime - int(bidinfo.timeexpires) < 0:
-        cancan += 1
-        print('Bid can be cancelled:', bidinfo.bidder, bidinfo.seal)
-print('Total:', cancan)
+if __name__ == '__main__':
+    main()
