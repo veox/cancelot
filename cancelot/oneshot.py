@@ -137,10 +137,10 @@ def pickle_bids(bids, starttime = int(time.time()), blocknum = 0):
         pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
     return
 
-def cancan(bids, starttime = int(time.time())):
+def cancan(bids, endtime = int(time.time())):
     cancan = 0
     for _, bidinfo in bids.items():
-        timediff = int(starttime) - int(bidinfo.timeexpires)
+        timediff = int(endtime) - int(bidinfo.timeexpires)
         if timediff >= 0:
             cancan += 1
             print('Can cancel! bidder:', bidinfo.bidder, 'seal:', bidinfo.seal, 'timediff:', timediff)
@@ -178,8 +178,12 @@ def main():
         # while loop ends
 
     # print those that have not been revealed
-    print('Total:', cancan(bids), 'at', starttime)
-    print('Total:', cancan(bids), 'at', int(time.time()))
+    print('Cancellation candidates:')
+    print('    ', cancan(bids, endtime = starttime), '(at script start time)')
+    print('    ', cancan(bids, endtime = int(time.time())), '(now)')
+    print('    ', cancan(bids, endtime = int(time.time()) + 60*15), '(in the following fifteen minutes)')
+    print('    ', cancan(bids, endtime = int(time.time()) + 60*60), '(in the following hour)')
+    print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24), '(in the following day)')
     return # main()
 
 if __name__ == '__main__':
