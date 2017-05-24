@@ -119,7 +119,7 @@ def check_tx(tx):
 
 
 #
-now = int(time.time())
+runstarted = int(time.time())
 
 # read in
 blocknum = startblock - 1
@@ -134,15 +134,17 @@ while blocknum <= web3.eth.blockNumber:
         if tx['to'] == registrar:
             check_tx(tx)
 
-    # write to file once in a while (full run takes an hour...)
+    # write to file once in a while (full run takes an hour or more...)
     if int(blocknum)%1000) == 0:
-        with open(str(now) + '-' + str(blocknum) + '.pickle', 'wb') as fd:
+        filename = str(runstarted) + '-' + str(blocknum) + '.pickle'
+        print('>>>>> Writing bids state to', filename)
+        with open(filename, 'wb') as fd:
             pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
 
 # print those that have not been revealed
 cancan = 0
 for _, bidinfo in bids.iteritems():
-    if now - int(bidinfo.timeexpires) < 0:
+    if runstarted - int(bidinfo.timeexpires) < 0:
         cancan += 1
         print('Bid can be cancelled:', bidinfo.bidder, bidinfo.seal)
 print('Total:', cancan)
