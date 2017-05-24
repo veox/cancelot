@@ -162,7 +162,12 @@ def main():
 
     while blocknum <= startblock:
         blocknum += 1
-        txcount = web3.eth.getBlockTransactionCount(blocknum)
+        try:
+            txcount = web3.eth.getBlockTransactionCount(blocknum)
+        except TypeError as e:
+            print('blocknum:', blocknum)
+            print('eth.blockNumber:', web3.eth.blockNumber)
+            raise e
         if txcount == 0: continue # short-circuit
 
         # iterate over transactions
