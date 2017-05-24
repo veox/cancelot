@@ -9,7 +9,7 @@ from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider())
 
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
-startblock = 3648565
+enslaunchblock = 3648565
 
 class BidInfo(object):
     def __init__(self, event):
@@ -123,7 +123,7 @@ starttime = int(time.time())
 startblock = web3.eth.blockNumber
 
 # read in
-blocknum = startblock - 1
+blocknum = enslaunchblock - 1
 while blocknum <= startblock:
     blocknum += 1
     txcount = web3.eth.getBlockTransactionCount(blocknum)
