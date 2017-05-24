@@ -134,9 +134,10 @@ while blocknum <= web3.eth.blockNumber:
         if tx['to'] == registrar:
             check_tx(tx)
 
-# try writing to file (run takes an hour...)
-with open(str(now) + '.pickle', 'w') as fd:
-    pickle.dump(bids, fd)
+    # write to file once in a while (full run takes an hour...)
+    if int(blocknum)%1000) == 0:
+        with open(str(now) + '-' + str(blocknum) + '.pickle', 'wb') as fd:
+            pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
 
 # print those that have not been revealed
 cancan = 0
