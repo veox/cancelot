@@ -119,11 +119,38 @@ def check_tx(tx, bids):
 
     return
 
+def load_pickled_bids(filename):
+    print('<<<<< Using pickle', filename)
+    # extract from a name like `1495630192-3759000.pickle`
+    blocknum = int(filename.split('.')[0].split('-')[1])
+    print('<<<<< Set blocknum to', blocknum)
+    with open(filename, 'rb') as fd:
+        bids = pickle.load(fd)
+        print('<<<<< Loaded', len(bids), 'bids')
+    return bids, blocknum
+
+def pickle_bids(bids, starttime = int(time.time()), blocknum = 0):
+    # 1495630192-3759000.pickle
+    filename = str(starttime) + '-' + str(blocknum) + '.pickle'
+    print('>>>>> Writing', len(bids), 'bids to', filename)
+    with open(filename, 'wb') as fd:
+        pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
+    return
+
+def cancan(bids, starttime = int(time.time())):
+    cancan = 0
+    for _, bidinfo in bids.items():
+        timediff = int(starttime) - int(bidinfo.timeexpires)
+        if timediff >= 0:
+            cancan += 1
+            print('Can cancel! bidder:', bidinfo.bidder, 'seal:', bidinfo.seal, 'timediff:', timediff)
+    return cancan
+
 def main():
     # log/state filenames and loop limiting
     starttime = int(time.time())
     startblock = web3.eth.blockNumber
-    # start one block behind, just in case
+    # start one block behind, to capture the `enslaunchblock` with increment-first loop
     blocknum = enslaunchblock - 1
 
     # msg.sender+sealedBid -> bid info
@@ -131,13 +158,7 @@ def main():
 
     # use existing pickle if provided
     if len(sys.argv) == 2:
-        filename = str(sys.argv[1])
-        print('>>>>> Using pickle', filename)
-        # extract from a name like `1495630192-3759000.pickle`
-        blocknum = int(filename.split('.')[0].split('-')[1])
-        print('>>>>> Set blocknum to', blocknum)
-        with open(filename, 'rb') as fd:
-            bids = pickle.load(fd)
+        bids, blocknum = load_pickled_bids(sys.argv[1])
 
     while blocknum <= startblock:
         blocknum += 1
@@ -152,20 +173,12 @@ def main():
 
         # write to file once in a while (full run takes an hour or more...)
         if int(blocknum)%1000 == 0:
-            filename = str(starttime) + '-' + str(blocknum) + '.pickle'
-            print('>>>>> Writing', len(bids), 'bids to', filename)
-            with open(filename, 'wb') as fd:
-                pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
+            pickle_bids(bids, starttime, blocknum)
         # while loop ends
 
     # print those that have not been revealed
-    cancan = 0
-    for _, bidinfo in bids.items():
-        timediff = int(starttime) - int(bidinfo.timeexpires)
-        if timediff >= 0:
-            cancan += 1
-            print('Cancan bidder:', bidinfo.bidder, 'seal:', bidinfo.seal, 'timediff:', timediff)
-    print('Total:', cancan)
+    print('Total:', cancan(bids), 'at', starttime)
+    print('Total:', cancan(bids), 'at', int(time.time()))
     return # main()
 
 if __name__ == '__main__':
