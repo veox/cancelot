@@ -136,7 +136,7 @@ while blocknum <= startblock:
             check_tx(tx)
 
     # write to file once in a while (full run takes an hour or more...)
-    if int(blocknum)%1000) == 0:
+    if int(blocknum)%1000 == 0:
         filename = str(starttime) + '-' + str(blocknum) + '.pickle'
         print('>>>>> Writing bids state to', filename)
         with open(filename, 'wb') as fd:
