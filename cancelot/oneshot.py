@@ -158,9 +158,10 @@ def main():
     # print those that have not been revealed
     cancan = 0
     for _, bidinfo in bids.items():
-        if starttime - int(bidinfo.timeexpires) < 0:
+        timediff = starttime - int(bidinfo.timeexpires)
+        if timediff < 0:
             cancan += 1
-            print('Bid can be cancelled:', bidinfo.bidder, bidinfo.seal)
+            print('Cancan bidder:', bidinfo.bidder,, 'seal:', bidinfo.seal, 'timediff:', timediff)
             print('Total:', cancan)
     return # main()
 
