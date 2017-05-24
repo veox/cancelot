@@ -126,7 +126,7 @@ startblock = web3.eth.blockNumber
 blocknum = enslaunchblock - 1
 
 # use existing pickle if provided
-if len(argv) == 2:
+if len(sys.argv) == 2:
     filename = str(sys.argv[1])
     blocknum = filename.split('.')[0].split('-')[1]
     with open(filename, 'rb') as fd:
