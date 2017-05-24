@@ -7,7 +7,7 @@ import sys
 import time
 
 from web3 import Web3, IPCProvider
-web3 = Web3(IPCProvider())
+web3 = Web3(IPCProvider()) # TODO: don't use global
 
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
