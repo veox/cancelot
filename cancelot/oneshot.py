@@ -12,10 +12,13 @@ web3 = Web3(IPCProvider())
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
 
+# msg.sender+sealedBid -> bid info
+bids = {}
+
 class BidInfo(object):
     def __init__(self, event):
         self.timeexpires = web3.eth.getBlock(event['blockNumber'])['timestamp'] + 1209600 # magicnum: 2 weeks
-        self.bidder = event['topics'][2]
+        self.bidder = event['topics'][2] # FIXME: remove zero-padded from front
         self.seal = event['topics'][1]
         return
 
@@ -122,9 +125,6 @@ def main():
     # start one block behind, just in case
     blocknum = enslaunchblock - 1
 
-    # msg.sender+sealedBid -> bid info
-    bids = {}
-
     # use existing pickle if provided
     if len(sys.argv) == 2:
         filename = str(sys.argv[1])
@@ -138,7 +138,7 @@ def main():
     while blocknum <= startblock:
         blocknum += 1
         txcount = web3.eth.getBlockTransactionCount(blocknum)
-        if txcount == 0: continue
+        if txcount == 0: continue # short-circuit
 
         # iterate over transactions
         for txi in range(txcount):
@@ -149,7 +149,7 @@ def main():
         # write to file once in a while (full run takes an hour or more...)
         if int(blocknum)%1000 == 0:
             filename = str(starttime) + '-' + str(blocknum) + '.pickle'
-            print('>>>>> Writing bids state to', filename)
+            print('>>>>> Writing', len(bids), 'bids to', filename)
             with open(filename, 'wb') as fd:
                 pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
         # while loop ends
