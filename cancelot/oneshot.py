@@ -128,7 +128,8 @@ blocknum = enslaunchblock - 1
 # use existing pickle if provided
 if len(sys.argv) == 2:
     filename = str(sys.argv[1])
-    blocknum = filename.split('.')[0].split('-')[1]
+    # extract from a name like `1495630192-3759000.pickle`
+    blocknum = int(filename.split('.')[0].split('-')[1])
     with open(filename, 'rb') as fd:
         bids = pickle.load(fd)
 
