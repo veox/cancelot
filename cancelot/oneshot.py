@@ -160,14 +160,10 @@ def main():
     if len(sys.argv) == 2:
         bids, blocknum = load_pickled_bids(sys.argv[1])
 
-    while blocknum <= startblock:
+    # loop until blocknum == startblock
+    while blocknum < startblock:
         blocknum += 1
-        try:
-            txcount = web3.eth.getBlockTransactionCount(blocknum)
-        except TypeError as e:
-            print('blocknum:', blocknum)
-            print('eth.blockNumber:', web3.eth.blockNumber)
-            raise e
+        txcount = web3.eth.getBlockTransactionCount(blocknum)
         if txcount == 0: continue # short-circuit
 
         # iterate over transactions
