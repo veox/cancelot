@@ -12,10 +12,13 @@ web3 = Web3(IPCProvider()) # TODO: don't use global
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
 
+TWOWEEKS = 1209600 # in seconds
+
 class BidInfo(object):
     def __init__(self, event):
         self.blockadded = event['blockNumber']
-        self.timeexpires = web3.eth.getBlock(event['blockNumber'])['timestamp'] + 1209600 # magicnum: 2 weeks
+        self.timeadded = int(web3.eth.getBlock(event['blockNumber'])['timestamp'])
+        self.timeexpires = self.timeadded + TWOWEEKS
         self.bidder = event['topics'][2] # FIXME: remove zero-padded from front
         self.seal = event['topics'][1]
         return
@@ -158,10 +161,10 @@ def main():
     # print those that have not been revealed
     cancan = 0
     for _, bidinfo in bids.items():
-        timediff = starttime - int(bidinfo.timeexpires)
-        if timediff < 0:
+        timediff = int(starttime) - int(bidinfo.timeexpires)
+        if timediff >= 0:
             cancan += 1
-            print('Cancan bidder:', bidinfo.bidder,, 'seal:', bidinfo.seal, 'timediff:', timediff)
+            print('Cancan bidder:', bidinfo.bidder, 'seal:', bidinfo.seal, 'timediff:', timediff)
             print('Total:', cancan)
     return # main()
 
