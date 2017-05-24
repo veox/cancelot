@@ -12,13 +12,13 @@ web3 = Web3(IPCProvider()) # TODO: don't use global
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
 
-TWOWEEKS = 1209600 # in seconds
+DAYS19 = 1641600 # bid validity period - 19 days, in seconds
 
 class BidInfo(object):
     def __init__(self, event):
         self.blockadded = event['blockNumber']
         self.timeadded = int(web3.eth.getBlock(event['blockNumber'])['timestamp'])
-        self.timeexpires = self.timeadded + TWOWEEKS
+        self.timeexpires = self.timeadded + DAYS19
         self.bidder = event['topics'][2] # FIXME: remove zero-padded from front
         self.seal = event['topics'][1]
         return
