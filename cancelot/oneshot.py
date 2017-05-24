@@ -118,12 +118,13 @@ def check_tx(tx):
     return
 
 
-#
-runstarted = int(time.time())
+# log/state filenames and loop limiting
+starttime = int(time.time())
+startblock = web3.eth.blockNumber
 
 # read in
 blocknum = startblock - 1
-while blocknum <= web3.eth.blockNumber:
+while blocknum <= startblock:
     blocknum += 1
     txcount = web3.eth.getBlockTransactionCount(blocknum)
     if txcount == 0: continue
@@ -136,7 +137,7 @@ while blocknum <= web3.eth.blockNumber:
 
     # write to file once in a while (full run takes an hour or more...)
     if int(blocknum)%1000) == 0:
-        filename = str(runstarted) + '-' + str(blocknum) + '.pickle'
+        filename = str(starttime) + '-' + str(blocknum) + '.pickle'
         print('>>>>> Writing bids state to', filename)
         with open(filename, 'wb') as fd:
             pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
@@ -144,7 +145,7 @@ while blocknum <= web3.eth.blockNumber:
 # print those that have not been revealed
 cancan = 0
 for _, bidinfo in bids.iteritems():
-    if runstarted - int(bidinfo.timeexpires) < 0:
+    if starttime - int(bidinfo.timeexpires) < 0:
         cancan += 1
         print('Bid can be cancelled:', bidinfo.bidder, bidinfo.seal)
 print('Total:', cancan)
