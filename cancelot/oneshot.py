@@ -19,9 +19,6 @@ class BidInfo(object):
         self.seal = event['topics'][1]
         return
 
-# msg.sender+sealedBid -> bid info
-bids = {}
-
 def handle_newbid(bidder, event):
     seal = event['topics'][1]
     idx =  bidder + seal
@@ -124,6 +121,9 @@ def main():
     startblock = web3.eth.blockNumber
     # start one block behind, just in case
     blocknum = enslaunchblock - 1
+
+    # msg.sender+sealedBid -> bid info
+    bids = {}
 
     # use existing pickle if provided
     if len(sys.argv) == 2:
