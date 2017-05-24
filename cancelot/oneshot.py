@@ -6,6 +6,8 @@ import pprint
 import sys
 import time
 
+import decimal
+
 from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider()) # TODO: don't use global
 
@@ -19,7 +21,7 @@ class BidInfo(object):
         self.blockadded = event['blockNumber']
         self.timeadded = int(web3.eth.getBlock(event['blockNumber'])['timestamp'])
         self.timeexpires = self.timeadded + DAYS19
-        self.bidder = event['topics'][2] # FIXME: remove zero-padded from front
+        self.bidder = '0x' + event['topics'][2][-40:] # 20 bytes from the end
         self.seal = event['topics'][1]
         return
 
@@ -143,7 +145,15 @@ def cancan(bids, endtime = int(time.time())):
         timediff = int(endtime) - int(bidinfo.timeexpires)
         if timediff >= 0:
             cancan += 1
-            print('Can cancel! bidder:', bidinfo.bidder, 'seal:', bidinfo.seal, 'timediff:', timediff)
+            # look up sealedBids[msg.sender][seal]
+            retval = web3.eth.call({
+                'to': registrar,
+                'data': '0x5e431709' + '00'*12 + bidinfo.bidder[2:] + bidinfo.seal[2:]
+            })
+            deedaddr = '0x' + retval[-40:] # 20 bytes from the end
+            atstake = web3.fromWei(web3.eth.getBalance(deedaddr), 'finney') * decimal.Decimal('0.005') # 0.5%
+            print('Can cancel! bidder:', bidinfo.bidder, 'seal:', bidinfo.seal,
+                  'timediff:', timediff, 'at stake:', round(atstake, 2), '(finneys)')
     return cancan
 
 def main():
