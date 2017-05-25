@@ -69,17 +69,6 @@ def handle_bidrevealed(bidder, event, bids):
             pprint.pprint(event)
             print('='*163)
             raise ee
-        # print('='*77 + ' DANG!.. ' + '='*77)
-        # print('thishash:', thishash)
-        # print('bidder:  ', bidder)
-        # print('value:   ', value)
-        # print('salt:    ', salt)
-        # print('seal:    ', seal)
-        # print('idx:     ', idx)
-        # print('='*163)
-        # pprint.pprint(tx)
-        # print('='*163)
-        # raise e
 
     print('Bid from', bidder, 'with seal', seal, 'remvd',
           '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
