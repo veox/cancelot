@@ -35,15 +35,9 @@ def handle_newbid(bidder, event, bids):
           '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 
-def idx_bidcancelled(event):
-    seal = event['topics'][1]
-    bidder = event['topics'][2][-40:] # 20 bytes from the end
-    return '0x' + bidder + seal # TODO: get these '0x' under control, will ya?..
-
-# TODO: idx_bidrevealed()
-
-def handle_bidrevealed(bidder, event, bids):
-    # FIXME: we've already retrieved this before!
+def idx_bidrevealed(event, bidder):
+    '''Reconstructs our lookup index from logged timely reveal event.'''
+    # FIXME: we've already retrieved this before, way down in the stack!
     tx = web3.eth.getTransaction(event['transactionHash'])
     # get salt from transaction data - it's not logged :/
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
@@ -55,18 +49,27 @@ def handle_bidrevealed(bidder, event, bids):
     # calculate seal (used as part of index)
     seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
     # finally, formulate it
-    idx = bidder + seal
+    return bidder + seal
 
+def idx_bidcancelled(event):
+    '''Reconstructs our lookup index from logged cancellation event.'''
+    seal = event['topics'][1]
+    bidder = event['topics'][2][-40:] # 20 bytes from the end
+    return '0x' + bidder + seal # TODO: get these '0x' under control, will ya?..
+
+# TODO: idx_bidrevealed()
+
+def handle_bidrevealed(bidder, event, bids):
     # FIXME: ugly nested
     try:
-        del bids[idx]
+        del bids[idx_bidrevealed(event, bidder)]
     except KeyError as e:
         # might be "external cancellation", try that...
         try:
             del bids[idx_bidcancelled(event)]
         except KeyError as ee:
             print('='*77 + ' CRAP!!! ' + '='*77)
-            print('idx:     ', idx_bidcancelled(event))
+            print('idx: ', idx_bidcancelled(event))
             print('='*163)
             pprint.pprint(event)
             print('='*163)
