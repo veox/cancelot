@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# find all transactions with a specific "fingerprint" in logs
+# ENS "stale bid" cancellation opportunity monitor. One-shot. Pickle hoarder.
+# Author: Noel Maersk
+# License: All rights reserved. Forbidden to distribute.
 
 import pickle
 import pprint
@@ -19,7 +21,7 @@ DAYS19 = 1641600 # bid validity period - 19 days, in seconds
 class BidInfo(object):
     def __init__(self, event):
         self.blockadded = event['blockNumber']
-        self.timeadded = int(web3.eth.getBlock(event['blockNumber'])['timestamp'])
+        self.timeadded = int(web3.eth.getBlock(self.blockadded)['timestamp'])
         self.timeexpires = self.timeadded + DAYS19
         self.bidder = '0x' + event['topics'][2][-40:] # 20 bytes from the end
         self.seal = event['topics'][1]
