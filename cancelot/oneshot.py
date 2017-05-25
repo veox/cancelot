@@ -60,13 +60,21 @@ def idx_bidcancelled(event):
 # TODO: idx_bidrevealed()
 
 def handle_bidrevealed(bidder, event, bids):
-    # FIXME: ugly nested
+    # FIXME: ugly - nested exceptions
     try:
-        del bids[idx_bidrevealed(event, bidder)]
+        idx = idx_bidrevealed(event, bidder)
+        seal = bids[idx].seal
+        del bids[idx]
+        print('Bid from', bidder, 'with seal', seal, 'remvd',
+              '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     except KeyError as e:
         # might be "external cancellation", try that...
         try:
-            del bids[idx_bidcancelled(event)]
+            idx = idx_bidcancelled(event)
+            seal = bids[idx].seal
+            del bids[idx]
+            print('Bid from', bidder, 'with seal', seal, 'cancd',
+                  '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
         except KeyError as ee:
             print('='*77 + ' CRAP!!! ' + '='*77)
             print('idx: ', idx_bidcancelled(event))
@@ -74,9 +82,6 @@ def handle_bidrevealed(bidder, event, bids):
             pprint.pprint(event)
             print('='*163)
             raise ee
-
-    print('Bid from', bidder, 'with seal', seal, 'remvd',
-          '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 
 # fingerprint -> event name
