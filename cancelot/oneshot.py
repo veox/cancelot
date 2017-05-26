@@ -20,11 +20,12 @@ DAYS19 = 1641600 # bid validity period - 19 days, in seconds
 
 class BidInfo(object):
     def __init__(self, event):
-        self.blockadded = event['blockNumber']
-        self.timeadded = int(web3.eth.getBlock(self.blockadded)['timestamp'])
-        self.timeexpires = self.timeadded + DAYS19
+        self.blockplaced = event['blockNumber']
+        self.timeplaced = int(web3.eth.getBlock(self.blockplaced)['timestamp'])
+        self.timeexpires = self.timeplaced + DAYS19
         self.bidder = '0x' + event['topics'][2][-40:] # 20 bytes from the end
         self.seal = event['topics'][1]
+        # these two are not set by default, to save on IPC requests
         self.deedaddr = None
         self.deedsize = None
         
@@ -41,7 +42,7 @@ class BidInfo(object):
             web3.fromWei(self.deedsize, unit), 2)) + ' (' + unit + ') '
         ret += 'atstake = '  + str(round(
             web3.fromWei(self.deedsize * decimal.Decimal('0.005'), unit), 2)) + ' (' + unit + ') '
-        ret += 'expires = ' + str(int(self.timeexpires) - int(time.time())) + ' (from now)'
+        ret += 'expires = ' + str(self.timeexpires)
 
         return ret
 
@@ -162,15 +163,15 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
 
     return
 
-def cancan(bids, endtime = None):
+def cancan(bids, bythistime = None):
     '''Retrieves bids' deed contract addresses. Prints bid if can be cancelled.'''
-    cancan = []
+    ret = []
 
-    if endtime == None:
-        endtime = int(time.time())
+    if bythistime == None:
+        bythistime = int(time.time())
 
     for _, bidinfo in bids.items():
-        timediff = int(endtime) - int(bidinfo.timeexpires)
+        timediff = int(bythistime) - int(bidinfo.timeexpires)
 
         if timediff >= 0:
             # look up sealedBids[msg.sender][seal] and its size
@@ -183,11 +184,11 @@ def cancan(bids, endtime = None):
             bidinfo.deedsize = int(web3.eth.getBalance(bidinfo.deedaddr))
 
             # track for returning
-            cancan.append(bidinfo)
+            ret.append(bidinfo)
 
             print(bidinfo)
 
-    return cancan
+    return ret
 
 def main():
     # log/state filenames and loop limiting
