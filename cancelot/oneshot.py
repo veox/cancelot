@@ -191,7 +191,9 @@ def main():
     print('    ', cancan(bids, endtime = int(time.time())), '(now)')
     print('    ', cancan(bids, endtime = int(time.time()) + 60*15), '(in the following fifteen minutes)')
     print('    ', cancan(bids, endtime = int(time.time()) + 60*60), '(in the following hour)')
+    print('    ', cancan(bids, endtime = int(time.time()) + 60*60*4), '(in the following four hours)')
     print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24), '(in the following day)')
+    print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24*7), '(in the following seven days)')
 
     return # main()
 
