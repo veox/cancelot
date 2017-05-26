@@ -130,19 +130,27 @@ def load_pickled_bids(filename):
     with open(filename, 'rb') as fd:
         bids = pickle.load(fd)
         print('<<<<< Loaded', len(bids), 'bids')
+
     return bids, blocknum # FIXME: hidden return of `blocknum`
 
-def pickle_bids(bids, starttime = int(time.time()), blocknum = 0):
+def pickle_bids(bids, starttime = None, blocknum = 0):
+    if starttime == None:
+        starttime = int(time.time())
+
     # 1495630192-3759000.pickle
     filename = str(starttime) + '-' + str(blocknum) + '.pickle'
     print('>>>>> Writing', len(bids), 'bids to', filename)
     with open(filename, 'wb') as fd:
         pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
+
     return
 
-def cancan(bids, endtime = int(time.time())):
+def cancan(bids, endtime = None):
     '''Retrieves bids' deed contract addresses. Prints bid if can be cancelled.'''
     cancan = 0
+
+    if endtime == None:
+        endtime = int(time.time())
 
     for _, bidinfo in bids.items():
         timediff = int(endtime) - int(bidinfo.timeexpires)
@@ -157,16 +165,19 @@ def cancan(bids, endtime = int(time.time())):
             })
             # update bid info
             bidinfo.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
-            bidinfo.deedsize = web3.eth.getBalance(bidinfo.deedaddr)
+            bidinfo.deedsize = int(web3.eth.getBalance(bidinfo.deedaddr))
 
             print('bidder = "'  + str(bidinfo.bidder) + '"',
                   'seal ="'     + str(bidinfo.seal) + '"',
                   '\n',
                   'deedaddr ="' + str(bidinfo.deedaddr) + '"',
-                  'deedsize = ' + str(round(web3.fromWei(bidinfo.deedsize, 'finney'), 2)) + ' (finney)',
                   '\n',
-                  'atstake = "' + str(round(bidinfo.deedsize * decimal.Decimal('0.005'), 2) + '"',
-                                      'timediff = ' + str(timediff)))
+                  'deedsize = ' + str(round(
+                      web3.fromWei(bidinfo.deedsize, 'finney'), 2)) + ' (finney)',
+                  '\n',
+                  'atstake = '  + str(round(
+                      web3.fromWei(bidinfo.deedsize * decimal.Decimal('0.005'), 'finney'), 2)) + ' (finney)',
+                  'timediff = ' + str(timediff))
     return cancan
 
 def main():
