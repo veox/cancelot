@@ -147,7 +147,7 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
 
 def cancan(bids, endtime = None):
     '''Retrieves bids' deed contract addresses. Prints bid if can be cancelled.'''
-    cancan = 0
+    cancan = []
 
     if endtime == None:
         endtime = int(time.time())
@@ -156,8 +156,6 @@ def cancan(bids, endtime = None):
         timediff = int(endtime) - int(bidinfo.timeexpires)
 
         if timediff >= 0:
-            cancan += 1
-
             # look up sealedBids[msg.sender][seal] and its size
             retval = web3.eth.call({
                 'to': registrar,
@@ -167,6 +165,10 @@ def cancan(bids, endtime = None):
             bidinfo.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
             bidinfo.deedsize = int(web3.eth.getBalance(bidinfo.deedaddr))
 
+            # track for returning
+            cancan.append(bidinfo)
+
+            # TODO: __str__ in BidInfo
             print('bidder = "'  + str(bidinfo.bidder) + '"',
                   'seal ="'     + str(bidinfo.seal) + '"',
                   '\n',
@@ -178,6 +180,7 @@ def cancan(bids, endtime = None):
                   'atstake = '  + str(round(
                       web3.fromWei(bidinfo.deedsize * decimal.Decimal('0.005'), 'finney'), 2)) + ' (finney)',
                   'timediff = ' + str(timediff))
+
     return cancan
 
 def main():
