@@ -31,10 +31,14 @@ class BidInfo(object):
 
     def __str__(self):
         unit = 'finney'
+        self.update_deed_info()
+
         ret = ''
+
         ret += 'bidder = "'  + str(self.bidder) + '"; '
         ret += 'seal ="'     + str(self.seal) + '"; '
         ret += '\n'
+
         ret += 'deedaddr ="' + str(self.deedaddr) + '"; '
         ret += 'deedsize = ' + str(round(
             web3.fromWei(self.deedsize, unit), 2)) + ' (' + unit + ') '
@@ -50,8 +54,8 @@ class BidInfo(object):
             'to': registrar,
             'data': '0x5e431709' + '00'*12 + self.bidder[2:] + self.seal[2:]
         })
-
         self.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
+
         if self.deedaddr != '0x0000000000000000000000000000000000000000' :
             self.deedsize = int(web3.eth.getBalance(self.deedaddr))
         else:
