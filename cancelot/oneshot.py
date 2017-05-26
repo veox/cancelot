@@ -25,6 +25,8 @@ class BidInfo(object):
         self.timeexpires = self.timeadded + DAYS19
         self.bidder = '0x' + event['topics'][2][-40:] # 20 bytes from the end
         self.seal = event['topics'][1]
+        self.deedaddr = None
+        self.deedsize = None
         return
 
 def handle_newbid(bidder, event, bids):
@@ -139,20 +141,32 @@ def pickle_bids(bids, starttime = int(time.time()), blocknum = 0):
     return
 
 def cancan(bids, endtime = int(time.time())):
+    '''Retrieves bids' deed contract addresses. Prints bid if can be cancelled.'''
     cancan = 0
+
     for _, bidinfo in bids.items():
         timediff = int(endtime) - int(bidinfo.timeexpires)
+
         if timediff >= 0:
             cancan += 1
-            # look up sealedBids[msg.sender][seal]
+
+            # look up sealedBids[msg.sender][seal] and its size
             retval = web3.eth.call({
                 'to': registrar,
                 'data': '0x5e431709' + '00'*12 + bidinfo.bidder[2:] + bidinfo.seal[2:]
             })
-            deedaddr = '0x' + retval[-40:] # 20 bytes from the end
-            atstake = web3.fromWei(web3.eth.getBalance(deedaddr), 'finney') * decimal.Decimal('0.005') # 0.5%
-            print('Can cancel! bidder:', bidinfo.bidder, 'seal:', bidinfo.seal,
-                  'timediff:', timediff, 'at stake:', round(atstake, 2), '(finneys)')
+            # update bid info
+            bidinfo.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
+            bidinfo.deedsize = web3.eth.getBalance(deedaddr)
+
+            print('bidder = "'  + str(bidinfo.bidder) + '"',
+                  'seal ="'     + str(bidinfo.seal) + '"',
+                  '\n',
+                  'deedaddr ="' + str(bidinfo.deedaddr) + '"',
+                  'deedsize = ' + str(round(web3.fromWei(bidinfo.deedsize, 'finney'), 2)) + ' (finney)',
+                  '\n',
+                  'atstake = "' + str(round(bidinfo.deedsize * decimal.Decimal('0.005'), 2) + '"',
+                                      'timediff = ' + str(timediff)))
     return cancan
 
 def main():
@@ -187,14 +201,14 @@ def main():
     # having finished, save unconditionally
     pickle_bids(bids, starttime, blocknum)
 
-    print('Cancellation candidates:')
-    print('    ', cancan(bids, endtime = starttime), '(at script start time)')
-    print('    ', cancan(bids, endtime = int(time.time())), '(now)')
-    print('    ', cancan(bids, endtime = int(time.time()) + 60*15), '(in the following fifteen minutes)')
-    print('    ', cancan(bids, endtime = int(time.time()) + 60*60), '(in the following hour)')
-    print('    ', cancan(bids, endtime = int(time.time()) + 60*60*4), '(in the following four hours)')
-    print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24), '(in the following day)')
-    print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24*7), '(in the following seven days)')
+    # print('Cancellation candidates:')
+    # print('    ', cancan(bids, endtime = starttime), '(at script start time)')
+    # print('    ', cancan(bids, endtime = int(time.time())), '(now)')
+    # print('    ', cancan(bids, endtime = int(time.time()) + 60*15), '(in the following fifteen minutes)')
+    # print('    ', cancan(bids, endtime = int(time.time()) + 60*60), '(in the following hour)')
+    # print('    ', cancan(bids, endtime = int(time.time()) + 60*60*4), '(in the following four hours)')
+    # print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24), '(in the following day)')
+    # print('    ', cancan(bids, endtime = int(time.time()) + 60*60*24*7), '(in the following seven days)')
 
     return # main()
 
