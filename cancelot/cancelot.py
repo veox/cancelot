@@ -44,6 +44,17 @@ class BidInfo(object):
 
         return ret
 
+    def update_deed_info(self):
+        # look up sealedBids[msg.sender][seal] and its balance
+        retval = web3.eth.call({
+            'to': registrar,
+            'data': '0x5e431709' + '00'*12 + self.bidder[2:] + self.seal[2:]
+        })
+
+        self.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
+        self.deedsize = int(web3.eth.getBalance(self.deedaddr))
+
+        return
 
 def handle_newbid(bidder, event, bids):
     '''Process NewBid event.'''
@@ -166,7 +177,7 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
     return
 
 def cancan(bids, bythistime = None):
-    '''Retrieves bids' deed contract addresses. Prints bid if can be cancelled.'''
+    '''Prints and returns bids that can be cancelled.'''
     ret = []
 
     if bythistime == None:
@@ -176,14 +187,8 @@ def cancan(bids, bythistime = None):
         timediff = int(bythistime) - int(bidinfo.timeexpires)
 
         if timediff >= 0:
-            # look up sealedBids[msg.sender][seal] and its balance
-            retval = web3.eth.call({
-                'to': registrar,
-                'data': '0x5e431709' + '00'*12 + bidinfo.bidder[2:] + bidinfo.seal[2:]
-            })
-            # update bid info
-            bidinfo.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
-            bidinfo.deedsize = int(web3.eth.getBalance(bidinfo.deedaddr))
+            # update deed address and balance
+            bidinfo.update_deed_info()
 
             # track for returning
             ret.append(bidinfo)
