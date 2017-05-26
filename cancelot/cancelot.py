@@ -8,7 +8,7 @@ import time
 import decimal
 
 from web3 import Web3, IPCProvider
-web3 = Web3(IPCProvider()) # TODO: don't use global
+web3 = Web3(IPCProvider()) # TODO: don't use module-level global
 
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
@@ -16,6 +16,7 @@ enslaunchblock = 3648565
 DAYS19 = 1641600 # bid validity period - 19 days, in seconds
 
 class BidInfo(object):
+    '''Information on a single bid and its deed.'''
     def __init__(self, event):
         self.blockplaced = event['blockNumber']
         self.timeplaced = int(web3.eth.getBlock(self.blockplaced)['timestamp'])
@@ -45,6 +46,7 @@ class BidInfo(object):
 
 
 def handle_newbid(bidder, event, bids):
+    '''Process NewBid event.'''
     seal = event['topics'][1]
     idx =  bidder + seal
     bids[idx] = BidInfo(event)
@@ -54,6 +56,7 @@ def handle_newbid(bidder, event, bids):
 
 def idx_bidrevealed(event, bidder):
     '''Reconstructs our lookup index from logged timely reveal event.'''
+
     # FIXME: we've already retrieved this before, way down in the stack!
     tx = web3.eth.getTransaction(event['transactionHash'])
     # get salt from transaction data - it's not logged :/
@@ -65,33 +68,36 @@ def idx_bidrevealed(event, bidder):
     thishash = event['topics'][1]
     # calculate seal (used as part of index)
     seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
-    # finally, formulate it
+
     return bidder + seal
 
 def idx_bidcancelled(event):
     '''Reconstructs our lookup index from logged cancellation event.'''
+
     seal = event['topics'][1]
     bidder = event['topics'][2][-40:] # 20 bytes from the end
+
     return '0x' + bidder + seal # TODO: get these '0x' under control, will ya?..
 
-# TODO: idx_bidrevealed()
-
 def handle_bidrevealed(bidder, event, bids):
-    # FIXME: ugly - nested exceptions
+    '''Process BidRevealed event.
+
+    Since BidRevealed and BidCancelled are not differentiated in the temporary
+    registrar, they both have to be handled here.'''
+
+    # UGLY: nested exceptions
     try:
         idx = idx_bidrevealed(event, bidder)
         seal = bids[idx].seal
         del bids[idx]
-        print('Bid from', bidder, 'with seal', seal, 'remvd',
-              '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
+        action = 'revld'
     except KeyError as e:
         # might be "external cancellation", try that...
         try:
             idx = idx_bidcancelled(event)
             seal = bids[idx].seal
             del bids[idx]
-            print('Bid from', bidder, 'with seal', seal, 'cancd',
-                  '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
+            action = 'cancd'
         except KeyError as ee:
             print('='*77 + ' CRAP!!! ' + '='*77)
             print('idx: ', idx_bidcancelled(event))
@@ -99,32 +105,31 @@ def handle_bidrevealed(bidder, event, bids):
             pprint.pprint(event)
             print('='*163)
             raise ee
+        print('Bid from', bidder, 'with seal', seal, action,
+              '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
     return
 
-# fingerprint -> event name
-topics = {
-    #'0x87e97e825a1d1fa0c54e1d36c7506c1dea8b1efd451fe68b000cf96f7cf40003': 'AuctionStarted',
-    '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': 'NewBid',
-    '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': 'BidRevealed'
-}
-# event name -> handler function
+# event fingerprint -> handler function
 handlers = {
-    'NewBid': handle_newbid,
-    'BidRevealed': handle_bidrevealed
+    '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': handle_newbid,
+    '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': handle_bidrevealed
 }
 
-def check_receipt_for_topics(receipt, topics, bids):
+def check_tx_receipt(receipt, bids):
     logs = receipt['logs']
-    # iterate through events, looking for bids placed/revealed fingerprint
+
+    # iterate through events, looking for known fingerprints
     for event in logs:
         fp = event['topics'][0]
-        topic = topics[fp] if topics.get(fp) else False
+        handle = handlers[fp] if handlers.get(fp) else None
+
         # handle matches
-        if topic:
+        if handle:
             # print('tx', receipt['transactionHash'],
             #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
             #       'has event', topic)
-            handlers[topic](receipt['from'], event, bids)
+            handle(receipt['from'], event, bids)
+
     return
 
 def check_tx(tx, bids):
@@ -133,7 +138,7 @@ def check_tx(tx, bids):
     # short-circuit if no event logs (probably OOGed)
     if len(receipt['logs']) == 0: return
 
-    check_receipt_for_topics(receipt, topics, bids)
+    check_tx_receipt(receipt, bids)
 
     return
 
@@ -141,12 +146,12 @@ def load_pickled_bids(filename):
     print('<<<<< Using pickle', filename)
     # extract from a name like `1495630192-3759000.pickle`
     blocknum = int(filename.split('.')[-2].split('-')[1]) # FIXME: use os.path
-    print('<<<<< Set blocknum to', blocknum)
+    print('<<<<< Set blocknum to:', blocknum)
     with open(filename, 'rb') as fd:
         bids = pickle.load(fd)
         print('<<<<< Loaded', len(bids), 'bids')
 
-    return bids, blocknum # FIXME: hidden return of `blocknum`
+    return (bids, blocknum)
 
 def pickle_bids(bids, starttime = None, blocknum = 0):
     if starttime == None:
@@ -171,7 +176,7 @@ def cancan(bids, bythistime = None):
         timediff = int(bythistime) - int(bidinfo.timeexpires)
 
         if timediff >= 0:
-            # look up sealedBids[msg.sender][seal] and its size
+            # look up sealedBids[msg.sender][seal] and its balance
             retval = web3.eth.call({
                 'to': registrar,
                 'data': '0x5e431709' + '00'*12 + bidinfo.bidder[2:] + bidinfo.seal[2:]
