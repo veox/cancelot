@@ -157,7 +157,7 @@ def cancan(bids, endtime = int(time.time())):
             })
             # update bid info
             bidinfo.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
-            bidinfo.deedsize = web3.eth.getBalance(deedaddr)
+            bidinfo.deedsize = web3.eth.getBalance(bidinfo.deedaddr)
 
             print('bidder = "'  + str(bidinfo.bidder) + '"',
                   'seal ="'     + str(bidinfo.seal) + '"',
