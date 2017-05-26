@@ -56,13 +56,16 @@ class BidInfo(object):
 
         return
 
+def print_handled(bidder, seal, action, blocknum, total):
+    print('Bid from', bidder, 'with seal', seal, action,
+          '(block ' + str(blocknum) + ').', 'Total:', total)
+
 def handle_newbid(bidder, event, bids):
     '''Process NewBid event.'''
     seal = event['topics'][1]
     idx =  bidder + seal
     bids[idx] = BidInfo(event)
-    print('Bid from', bidder, 'with seal', seal, 'added',
-          '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
+    print_handled(bidder, seal, 'added', event['blockNumber'], len(bids))
     return
 
 def idx_bidrevealed(event, bidder):
@@ -116,8 +119,9 @@ def handle_bidrevealed(bidder, event, bids):
             pprint.pprint(event)
             print('='*163)
             raise ee
-        print('Bid from', bidder, 'with seal', seal, action,
-              '(block ' + str(event['blockNumber']) + ').', 'Total:', len(bids))
+
+    print_handled(bidder, seal, action, event['blockNumber'], len(bids))
+
     return
 
 # event fingerprint -> handler function
