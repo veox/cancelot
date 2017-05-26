@@ -27,7 +27,24 @@ class BidInfo(object):
         self.seal = event['topics'][1]
         self.deedaddr = None
         self.deedsize = None
+        
         return
+
+    def __str__(self):
+        unit = 'finney'
+        ret = ''
+        ret += 'bidder = "'  + str(self.bidder) + '"; '
+        ret += 'seal ="'     + str(self.seal) + '"; '
+        ret += '\n'
+        ret += 'deedaddr ="' + str(self.deedaddr) + '"; '
+        ret += 'deedsize = ' + str(round(
+            web3.fromWei(self.deedsize, unit), 2)) + ' (' + unit + ') '
+        ret += 'atstake = '  + str(round(
+            web3.fromWei(self.deedsize * decimal.Decimal('0.005'), unit), 2)) + ' (' + unit + ') '
+        ret += 'expires = ' + str(int(self.timeexpires) - int(time.time())) + ' (from now)'
+
+        return ret
+
 
 def handle_newbid(bidder, event, bids):
     seal = event['topics'][1]
@@ -168,18 +185,7 @@ def cancan(bids, endtime = None):
             # track for returning
             cancan.append(bidinfo)
 
-            # TODO: __str__ in BidInfo
-            print('bidder = "'  + str(bidinfo.bidder) + '"',
-                  'seal ="'     + str(bidinfo.seal) + '"',
-                  '\n',
-                  'deedaddr ="' + str(bidinfo.deedaddr) + '"',
-                  '\n',
-                  'deedsize = ' + str(round(
-                      web3.fromWei(bidinfo.deedsize, 'finney'), 2)) + ' (finney)',
-                  '\n',
-                  'atstake = '  + str(round(
-                      web3.fromWei(bidinfo.deedsize * decimal.Decimal('0.005'), 'finney'), 2)) + ' (finney)',
-                  'timediff = ' + str(timediff))
+            print(bidinfo)
 
     return cancan
 
