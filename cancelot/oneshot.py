@@ -184,7 +184,8 @@ def main():
         # write to file once in a while (full run takes an hour or more...)
         if int(blocknum)%1000 == 0:
             pickle_bids(bids, starttime, blocknum)
-    # while loop ends
+    # having finished, save unconditionally
+    pickle_bids(bids, starttime, blocknum)
 
     print('Cancellation candidates:')
     print('    ', cancan(bids, endtime = starttime), '(at script start time)')
