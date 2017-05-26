@@ -52,7 +52,10 @@ class BidInfo(object):
         })
 
         self.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
-        self.deedsize = int(web3.eth.getBalance(self.deedaddr))
+        if self.deedaddr != '0x0000000000000000000000000000000000000000' :
+            self.deedsize = int(web3.eth.getBalance(self.deedaddr))
+        else:
+            self.deedsize = 0 # null-address is not a deed ;)
 
         return
 
