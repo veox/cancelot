@@ -2,6 +2,7 @@
 
 import pickle
 import pprint
+import os
 import sys
 import time
 
@@ -165,6 +166,7 @@ def check_tx(tx, bids):
     return
 
 def load_pickled_bids(filename):
+    filename = os.path.realpath(filename)
     print('<<<<< Using pickle', filename)
     # extract from a name like `1495630192-3759000.pickle`
     blocknum = int(filename.split('.')[-2].split('-')[1]) # FIXME: use os.path
