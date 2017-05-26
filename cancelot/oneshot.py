@@ -125,7 +125,7 @@ def check_tx(tx, bids):
 def load_pickled_bids(filename):
     print('<<<<< Using pickle', filename)
     # extract from a name like `1495630192-3759000.pickle`
-    blocknum = int(filename.split('.')[0].split('-')[1])
+    blocknum = int(filename.split('.')[-2].split('-')[1]) # FIXME: use os.path
     print('<<<<< Set blocknum to', blocknum)
     with open(filename, 'rb') as fd:
         bids = pickle.load(fd)
