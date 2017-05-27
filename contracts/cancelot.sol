@@ -9,7 +9,10 @@ pragma solidity ^0.4.11;
 // Minimal implementation of the .eth Registrar interface.
 contract RegistrarFakeInterface {
     // Short-circuit address->bytes32->Deed mapping. Signature 0x5e431709.
-    function sealedBids(address bidder, bytes32 seal) constant returns(address);
+    mapping (address => mapping(bytes32 => address)) public sealedBids;
+    //mapping (address => mapping(bytes32 => Deed)) public sealedBids;
+    //function sealedBids(address bidder, bytes32 seal) constant returns(address);
+
     // Actual. Signature 0x2525f5c1.
     function cancelBid(address bidder, bytes32 seal);
 }
@@ -17,10 +20,8 @@ contract RegistrarFakeInterface {
 // Sir Cancelot, the cancellation bot - banger of coconuts, protector of nothing.
 // Game-theoretic looney. Sees the world burn, even if it doesn't. To be avoided.
 contract Cancelot {
-    address owner;
+    address public owner;
     RegistrarFakeInterface registrar;
-
-    event logDonationReceived(address indexed sender, address indexed origin, uint indexed value);
 
     modifier only_owner {
         if (msg.sender == owner) _;
@@ -31,6 +32,10 @@ contract Cancelot {
         registrar = RegistrarFakeInterface(_registrar);
     }
 
+    function test(address bidder, bytes32 seal) constant returns(address) {
+        return registrar.sealedBids(bidder, seal);
+    }
+    
     function cancel(address bidder, bytes32 seal) {
         if (registrar.sealedBids(bidder, seal) != 0)
             registrar.cancelBid.gas(msg.gas)(bidder, seal);
@@ -45,13 +50,7 @@ contract Cancelot {
         withdraw();
     }
 
-    function donate() payable {
-        logDonationReceived(msg.sender, tx.origin, msg.value);
-    }
-    
-    function () {
-        throw;
-    }
+    function () {}
 
     function terminate() only_owner {
         selfdestruct(owner);
