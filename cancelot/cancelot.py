@@ -11,6 +11,7 @@ import decimal
 from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider()) # TODO: don't use module-level global
 
+nulladdr = '0x0000000000000000000000000000000000000000'
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
 
@@ -202,6 +203,8 @@ def cancan(bids, bythistime = None):
         if timediff >= 0:
             # update deed address and balance
             bidinfo.update_deed_info()
-            ret[key] = bidinfo
+
+            if bidinfo.deedaddr != nulladdr:
+                ret[key] = bidinfo
 
     return ret
