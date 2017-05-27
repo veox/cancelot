@@ -32,10 +32,6 @@ contract Cancelot {
         registrar = RegistrarFakeInterface(_registrar);
     }
 
-    function test(address bidder, bytes32 seal) constant returns(address) {
-        return registrar.sealedBids(bidder, seal);
-    }
-    
     function cancel(address bidder, bytes32 seal) {
         if (registrar.sealedBids(bidder, seal) != 0)
             registrar.cancelBid.gas(msg.gas)(bidder, seal);
@@ -50,7 +46,7 @@ contract Cancelot {
         withdraw();
     }
 
-    function () {}
+    function () payable {}
 
     function terminate() only_owner {
         selfdestruct(owner);
