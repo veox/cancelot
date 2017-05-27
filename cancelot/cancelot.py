@@ -191,8 +191,8 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
     return
 
 def cancan(bids, bythistime = None):
-    '''Returns bids that can be cancelled. Populates passed bids' deed info.'''
-    ret = {}
+    '''Returns a list of bids that can be cancelled, all the while populating their deed info. '''
+    ret = []
 
     if bythistime == None:
         bythistime = int(time.time())
@@ -205,6 +205,6 @@ def cancan(bids, bythistime = None):
             bidinfo.update_deed_info()
 
             if bidinfo.deedaddr != nulladdr:
-                ret[key] = bidinfo
+                ret.append(bidinfo)
 
     return ret
