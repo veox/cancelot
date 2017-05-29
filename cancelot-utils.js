@@ -39,3 +39,7 @@ function cancelotGP(bidder, seal) {
 function thrashTx(tx) {
     return eth.resend(tx, tx.gasPrice + 1, testtx.gas);
 }
+
+var CancelotAddress = '0xC9C7Db3C7a2e3b8AcA6E6F78180F7013575392a3';
+var CancelotABI = [{"constant":false,"inputs":[],"name":"terminate","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"withdraw","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"bidder","type":"address"},{"name":"seal","type":"bytes32"}],"name":"sweep","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"bidder","type":"address"},{"name":"seal","type":"bytes32"}],"name":"cancel","outputs":[],"payable":false,"type":"function"},{"inputs":[{"name":"_owner","type":"address"},{"name":"_registrar","type":"address"}],"payable":false,"type":"constructor"},{"payable":true,"type":"fallback"}]
+var Cancelot = eth.contract(CancelotABI).at(CancelotAddress);
