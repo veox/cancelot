@@ -222,13 +222,10 @@ def cancel_bid(bid, from_, to_, gas = 150000, gasprice = None):
         'data': '0x9e2ed686' + '00'*12 + bid.bidder[2:] + bid.seal[2:]
     })
 
+    return txhash
+
+def one_up(txhash, gasprice = None, maxgasprice = None):
     tx = web3.eth.getTransaction(txhash)
-
-    return tx
-
-def one_up(tx, gasprice = None, maxgasprice = None):
-    if maxgasprice == None:
-        raise Exception('maxgasprice not set!')
 
     if gasprice == None:
         gasprice = tx['gasPrice'] + 1
@@ -243,6 +240,12 @@ def one_up(tx, gasprice = None, maxgasprice = None):
         'data': tx['input']
     })
 
-    tx = web3.eth.getTransaction(txhash)
+    # Keep increas
+    # FIXME: rewrite with generator
+    if maxgasprice != None and gasprice < maxgasprice:
+        time.sleep(1)
+        step = int((maxgasprice - gasprice) / 10) # magicnum 10: off the top of my head
+        print('DEBUG: increasing gas price to', gasprice + step)
+        txhash = one_up(txhash, gasprice = gasprice + step, maxgasprice = maxgasprice)
 
-    return tx
+    return txhash
