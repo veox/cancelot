@@ -26,7 +26,7 @@ function cancelotGP(bidder, seal) {
     var maxGP = eth.getBalance(deed) * reward / maxGas;
 
     // TODO: get from http://ethgasstation.info/hashPowerTable.php
-    var gasPricesInShannon = [1, 2, 13, 15, 18, 19, 20, 25, 28, 40]; // 2017-05-28
+    var gasPricesInShannon = [1, 2, 15, 18, 19, 20, 25, 27, 40, 50]; // 2017-05-29
     var shannons = closestDown(web3.fromWei(maxGP, 'shannon'), gasPrices);
 
     return web3.toWei(shannons, 'shannon');
