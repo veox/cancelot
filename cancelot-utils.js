@@ -5,13 +5,12 @@ loadScript('ensutils.js')
 function closestDown(num, arr) {
     if (num < arr[0])
         throw 'NumTooLow';
+    var closest = arr[0];
 
-    var closest;
     for (var i = 0; i < arr.length; i++) {
-        closest = arr[i];
-
         var diff = num - arr[i];
         if (diff <= 0) break;
+        closest = arr[i];
     }
 
     return closest;
