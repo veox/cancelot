@@ -33,7 +33,7 @@ function cancelotGP(bidder, seal) {
     var shannons = closestDown(web3.fromWei(maxGP, 'shannon'), gasPricesInShannon);
 
     // ...and convert back to wei
-    return web3.toWei(shannons, 'shannon');
+    return [web3.toWei(shannons, 'shannon'), web3.toWei(maxGP, 'wei')];
 }
 
 function thrashTx(tx) {
