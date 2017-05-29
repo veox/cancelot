@@ -3,7 +3,8 @@
 loadScript('ensutils.js')
 
 function closestDown(num, arr) {
-    if (num < arr[0]) throw 'NumTooLow';
+    if (num < arr[0])
+        throw 'NumTooLow';
 
     var closest;
     for (var i = 0; i < arr.length; i++) {
@@ -17,13 +18,15 @@ function closestDown(num, arr) {
 }
 
 function cancelotGP(bidder, seal) {
-    var maxGas = 50000; // from 0xdead..'s txs - not tested with own yet
+    var minGas = 28177; // see tx 0x2a8411294620fb0b5c5bbf710e7aeddbfb48c778c4a8d56e90a7cb51851016d6
+    var maxGas = 49964; // see tx 0xc9f15d91218b3038946c6839495a8cb63eb4d56e98d25acd913cec3ce4921744
     var reward = 0.005; // 0.5%
 
-    var deed = ethRegistrar.sealedBids(bidder, seal);
-    if (deed == '0x0000000000000000000000000000000000000000') throw 'DeedCancelled';
+    var deedaddr = ethRegistrar.sealedBids(bidder, seal);
+    if (deedaddr == '0x0000000000000000000000000000000000000000')
+        throw 'DeedCancelled';
 
-    var maxGP = eth.getBalance(deed) * reward / maxGas;
+    var maxGP = eth.getBalance(deedaddr) * reward / maxGas; // float errors galore!
 
     // TODO: get from http://ethgasstation.info/hashPowerTable.php
     var gasPricesInShannon = [1, 2, 15, 18, 19, 20, 25, 27, 40, 50]; // 2017-05-29
@@ -32,4 +35,8 @@ function cancelotGP(bidder, seal) {
 
     // ...and convert back to wei
     return web3.toWei(shannons, 'shannon');
+}
+
+function thrashTx(tx) {
+    return eth.resend(tx, tx.gasPrice + 1, testtx.gas);
 }
