@@ -209,14 +209,38 @@ def cancan(bids, bythistime = None):
 
     return ret
 
-def cancel(bid, from_, to_, gas = 150000, gasprice = None):
+def cancel_bid(bid, from_, to_, gas = 150000, gasprice = None):
     if gasprice == None:
         gasprice = web3.toWei(1, 'shannon')
         print('WARNING: gasprice not specified; forced to', gasprice)
 
     txhash = web3.eth.sendTransaction({
-        'from': from_, 'to': to_, 'gas': gas, 'gasPrice': gasprice,
+        'from': from_,
+        'to': to_,
+        'gas': gas,
+        'gasPrice': gasprice,
         'data': '0x9e2ed686' + '00'*12 + bid.bidder[2:] + bid.seal[2:]
+    })
+
+    tx = web3.eth.getTransaction(txhash)
+
+    return tx
+
+def one_up(tx, gasprice = None, maxgasprice = None):
+    if maxgasprice == None:
+        raise Exception('maxgasprice not set!')
+
+    if gasprice == None:
+        gasprice = tx['gasPrice'] + 1
+        print('WARNING: gasprice not specified; increased by 1 to', gasprice)
+
+    txhash = web3.eth.sendTransaction({
+        'nonce': tx['nonce'],
+        'from': tx['from'],
+        'to': tx['to'],
+        'gas': tx['gas'],
+        'gasPrice': gasprice,
+        'data': tx['input']
     })
 
     tx = web3.eth.getTransaction(txhash)
