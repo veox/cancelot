@@ -27,7 +27,9 @@ function cancelotGP(bidder, seal) {
 
     // TODO: get from http://ethgasstation.info/hashPowerTable.php
     var gasPricesInShannon = [1, 2, 15, 18, 19, 20, 25, 27, 40, 50]; // 2017-05-29
-    var shannons = closestDown(web3.fromWei(maxGP, 'shannon'), gasPrices);
+    // calculate in shannons...
+    var shannons = closestDown(web3.fromWei(maxGP, 'shannon'), gasPricesInShannon);
 
+    // ...and convert back to wei
     return web3.toWei(shannons, 'shannon');
 }
