@@ -240,12 +240,19 @@ def one_up(txhash, gasprice = None, maxgasprice = None):
         'data': tx['input']
     })
 
-    # Keep increas
+    # Keep increasing the gas price, without ever quite reaching the maximum.
     # FIXME: rewrite with generator
     if maxgasprice != None and gasprice < maxgasprice:
         time.sleep(1)
+
         step = int((maxgasprice - gasprice) / 10) # magicnum 10: off the top of my head
         print('DEBUG: increasing gas price to', gasprice + step)
-        txhash = one_up(txhash, gasprice = gasprice + step, maxgasprice = maxgasprice)
+
+        try:
+            txhash = one_up(txhash, gasprice = gasprice + step, maxgasprice = maxgasprice)
+        except ValueError as e:
+            if e.code == -32000:
+                # Nonce too low - probably transaction mined.
+                pass
 
     return txhash
