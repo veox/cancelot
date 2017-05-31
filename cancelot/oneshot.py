@@ -26,6 +26,7 @@ def main():
     if len(sys.argv) == 2:
         (bids, blocknum) = cancelot.load_pickled_bids(sys.argv[1])
 
+    # FIXME: should be filtering messages - do rework in continuous.py
     # loop until blocknum == startblock
     while blocknum < startblock:
         blocknum += 1
