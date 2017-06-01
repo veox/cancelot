@@ -28,7 +28,7 @@ function cancelotGP(bidder, seal) {
     var maxGP = eth.getBalance(deedaddr) * reward / maxGas; // float errors galore!
 
     // TODO: get from http://ethgasstation.info/hashPowerTable.php
-    var gasPricesInShannon = [1, 2, 15, 18, 19, 20, 25, 27, 40]; // 2017-05-29
+    var gasPricesInShannon = [1, 4, 12, 15, 18, 20, 24, 25, 27, 40]; // 2017-06-01
     // calculate in shannons...
     var shannons = closestDown(web3.fromWei(maxGP, 'shannon'), gasPricesInShannon);
 
