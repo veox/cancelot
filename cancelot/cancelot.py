@@ -228,8 +228,8 @@ def one_up(txhash, gasprice = None, maxgasprice = None):
     tx = web3.eth.getTransaction(txhash)
 
     if gasprice == None:
-        gasprice = tx['gasPrice'] + 1
-        print('WARNING: gasprice not specified; increased by 1 to', gasprice)
+        gasprice = int(tx['gasPrice'] * 1.11)
+        print('WARNING: gasprice not specified; increased by 11% to', gasprice)
 
     txhash = web3.eth.sendTransaction({
         'nonce': tx['nonce'],
@@ -245,14 +245,12 @@ def one_up(txhash, gasprice = None, maxgasprice = None):
     if maxgasprice != None and gasprice < maxgasprice:
         time.sleep(1)
 
-        step = int((maxgasprice - gasprice) / 10) # magicnum 10: off the top of my head
-        print('DEBUG: increasing gas price to', gasprice + step)
+        gasprice = int(gasprice * 1.11)
+        print('DEBUG: increasing gas price to', gasprice)
 
         try:
-            txhash = one_up(txhash, gasprice = gasprice + step, maxgasprice = maxgasprice)
+            txhash = one_up(txhash, gasprice = gasprice, maxgasprice = maxgasprice)
         except ValueError as e:
-            if e.code == -32000:
-                # Nonce too low - probably transaction mined.
-                pass
+            print(e) # DEBUG print for now
 
     return txhash
