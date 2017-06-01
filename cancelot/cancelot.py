@@ -224,7 +224,7 @@ def cancel_bid(bid, from_, to_, gas = 150000, gasprice = None):
 
     return txhash
 
-def one_up(txhash, gasprice = None, maxgasprice = None):
+def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
     tx = web3.eth.getTransaction(txhash)
 
     if gasprice == None:
@@ -243,7 +243,7 @@ def one_up(txhash, gasprice = None, maxgasprice = None):
     # Keep increasing the gas price, without ever quite reaching the maximum.
     # FIXME: rewrite with generator
     if maxgasprice != None and gasprice < maxgasprice:
-        time.sleep(1)
+        time.sleep(sleeptime)
 
         gasprice = int(gasprice * 1.11)
         print('DEBUG: increasing gas price to', gasprice)
