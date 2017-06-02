@@ -8,13 +8,15 @@ function closestDown(num, arr) {
     var closest = arr[0];
 
     for (var i = 0; i < arr.length; i++) {
-        var diff = num - arr[i];
-        if (diff <= 0) break;
+        if (num - arr[i] <= 0) break;
         closest = arr[i];
     }
 
     return closest;
 }
+
+// TODO: get from http://ethgasstation.info/hashPowerTable.php
+var gasPricesInShannon = [1, 4, 12, 15, 18, 20, 24, 25, 27, 40]; // 2017-06-01
 
 function cancelotGP(bidder, seal) {
     var minGas = 28177; // see tx 0x2a8411294620fb0b5c5bbf710e7aeddbfb48c778c4a8d56e90a7cb51851016d6
@@ -27,8 +29,6 @@ function cancelotGP(bidder, seal) {
 
     var maxGP = eth.getBalance(deedaddr) * reward / maxGas; // float errors galore!
 
-    // TODO: get from http://ethgasstation.info/hashPowerTable.php
-    var gasPricesInShannon = [1, 4, 12, 15, 18, 20, 24, 25, 27, 40]; // 2017-06-01
     // calculate in shannons...
     var shannons = closestDown(web3.fromWei(maxGP, 'shannon'), gasPricesInShannon);
 
