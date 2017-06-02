@@ -209,6 +209,40 @@ def cancan(bids, bythistime = None):
 
     return ret
 
+# TODO: get from http://ethgasstation.info/hashPowerTable.php
+gaspricesinshannon = sorted([1, 4, 12, 15, 18, 20, 24, 25, 27, 40]) # 2017-06-01
+
+def _closest_down(num, sortedlist):
+    '''Finds a number closest-down to a given one from a sorted list of numbers.'''
+    if num < sortedlist[0]:
+        raise Exception('num lower than lowest in list')
+    closest = sortedlist[0]
+
+    for i in sortedlist:
+        if num - i <= 0:
+            break
+        closest = i
+
+    return closest
+
+def gas_range(bid):
+    '''Calculates minimum (recommended) and maximum (absolute) gas price for a given bid.'''
+    # magicnums: gas used, determined experimentally
+    mingas = 28177 # too late, see tx 0x2a8411294620fb0b5c5bbf710e7aeddbfb48c778c4a8d56e90a7cb51851016d6
+    maxgas = 49964 # success,  see tx 0xc9f15d91218b3038946c6839495a8cb63eb4d56e98d25acd913cec3ce4921744
+    reward = 0.005 # 0.5%
+
+    bid.update_deed_info()
+    if bid.deedaddr == '0x0000000000000000000000000000000000000000': # FIXME: zero-addr
+        raise Exception('Deed cancelled!')
+
+    maximum = int(bid.deedsize * reward / maxgas)
+
+    shannons = _closest_down(web3.fromWei(maximum, 'shannon'), gaspricesinshannon)
+    recommended = web3.toWei(shannons, 'shannon')
+
+    return (recommended, maximum)
+
 def cancel_bid(bid, from_, to_, gas = 150000, gasprice = None):
     if gasprice == None:
         gasprice = web3.toWei(1, 'shannon')
@@ -219,7 +253,7 @@ def cancel_bid(bid, from_, to_, gas = 150000, gasprice = None):
         'to': to_,
         'gas': gas,
         'gasPrice': gasprice,
-        'data': '0x9e2ed686' + '00'*12 + bid.bidder[2:] + bid.seal[2:]
+        'data': '0x9e2ed686' + '00'*12 + bid.bidder[2:] + bid.seal[2:] # FIXME: magicnums
     })
 
     return txhash
