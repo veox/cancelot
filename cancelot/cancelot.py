@@ -17,6 +17,10 @@ enslaunchblock = 3648565
 
 DAYS19 = 1641600 # bid validity period - 19 days, in seconds
 
+# FIXME: account selection
+deafaddr = '0xdeaf3515e441067d7f42c2509ec653222537b6eb'
+cancelotaddr = '0xC9C7Db3C7a2e3b8AcA6E6F78180F7013575392a3'
+
 class BidInfo(object):
     '''Information on a single bid and its deed.'''
     def __init__(self, event):
@@ -64,6 +68,9 @@ class BidInfo(object):
             self.deedsize = 0 # null-address is not a deed ;)
 
         return
+
+def now():
+    return int(time.time())
 
 def print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
@@ -225,7 +232,7 @@ def _closest_down(num, sortedlist):
 
     return closest
 
-def gas_range(bid):
+def gasprice_range(bid):
     '''Calculates minimum (recommended) and maximum (absolute) gas price for a given bid.'''
     # magicnums: gas used, determined experimentally
     mingas = 28177 # too late, see tx 0x2a8411294620fb0b5c5bbf710e7aeddbfb48c778c4a8d56e90a7cb51851016d6
@@ -243,9 +250,10 @@ def gas_range(bid):
 
     return (recommended, maximum)
 
-def cancel_bid(bid, from_, to_, gas = 150000, gasprice = None):
+# TODO: turn into Bid{,Info} class function?..
+def cancel_bid(bid, from_, to_ = cancelotaddr, gas = 150000, gasprice = None):
     if gasprice == None:
-        gasprice = web3.toWei(1, 'shannon')
+        gasprice = web3.toWei(12, 'shannon')
         print('WARNING: gasprice not specified; forced to', gasprice)
 
     txhash = web3.eth.sendTransaction({
@@ -288,3 +296,21 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
             print(e) # DEBUG print for now
 
     return txhash
+
+# FIXME: generator, async handler
+def process(bidlist, fromaddr = deafaddr):
+    '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
+    gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners
+
+    txhashes = []
+    for bid in bidlist:
+        (gprec, gpmax) = gasprice_range(bid)
+
+        # FIXME: UGLY stalling
+        while bid.timeexpires < now(): time.sleep(1)
+
+        txhash = cancel_bid(bid, fromaddr, gasprice = gprec)
+        print('Submitted', txhash)
+        txhashes.append(txhash)
+
+    return txhashes
