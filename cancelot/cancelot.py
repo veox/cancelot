@@ -3,6 +3,7 @@
 import pickle
 import pprint
 import os
+import random
 import sys
 import time
 
@@ -298,7 +299,7 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
     return txhash
 
 # FIXME: generator, async handler
-def process(bidlist, fromaddr = deafaddr):
+def process_bidlist(bidlist, fromaddr = deafaddr):
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
     gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners
 
@@ -306,11 +307,21 @@ def process(bidlist, fromaddr = deafaddr):
     for bid in bidlist:
         (gprec, gpmax) = gasprice_range(bid)
 
-        # FIXME: UGLY stalling
-        while bid.timeexpires < now(): time.sleep(1)
+        if gpmax < gpsafe:
+            gasprice = gprec
+        else:
+            gasprice = random.randint(gpsafe, gprec)
 
-        txhash = cancel_bid(bid, fromaddr, gasprice = gprec)
-        print('Submitted', txhash)
+        # FIXME: UGLY stalling
+        diff = bid.timeexpires - now()
+        if diff > 0:
+            # DEBUG
+            print('Sleeping for', diff, 'seconds...')
+            time.sleep(diff)
+
+        txhash = cancel_bid(bid, fromaddr, gasprice = gasprice)
         txhashes.append(txhash)
+        # DEBUG
+        print('Submitted', txhash, 'with gas price', web3.fromWei(gasprice, 'shannon'), '(shannon)')
 
     return txhashes
