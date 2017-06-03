@@ -306,15 +306,17 @@ def process_bidlist(bidlist, fromaddr = deafaddr, gpsafe = None, timeoffset = 0)
 
     txhashes = []
     for bid in bidlist:
+        # skip bids already cancelled
         try:
             (gprec, gpmax) = gasprice_range(bid)
         except:
             continue
 
+        # ???
         if gpmax < gpsafe:
             gasprice = gprec
         else:
-            gasprice = random.randint(gpsafe, gprec)
+            gasprice = random.randint(min(gpsafe, gprec), max(gpsafe, gprec))
 
         # FIXME: UGLY stalling
         diff = bid.timeexpires - now() - timeoffset
