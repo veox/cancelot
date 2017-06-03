@@ -305,7 +305,10 @@ def process_bidlist(bidlist, fromaddr = deafaddr, timeoffset = 0):
 
     txhashes = []
     for bid in bidlist:
-        (gprec, gpmax) = gasprice_range(bid)
+        try:
+            (gprec, gpmax) = gasprice_range(bid)
+        except:
+            continue
 
         if gpmax < gpsafe:
             gasprice = gprec
