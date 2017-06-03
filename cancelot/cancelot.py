@@ -218,7 +218,7 @@ def cancan(bids, bythistime = None):
     return ret
 
 # TODO: get from http://ethgasstation.info/hashPowerTable.php
-gaspricesinshannon = sorted([1, 4, 12, 15, 18, 20, 24, 25, 27, 40]) # 2017-06-01
+gaspricesinshannon = sorted([1, 4, 13, 18, 19, 20, 21, 23, 24, 27, 40]) # 2017-06-03
 
 def _closest_down(num, sortedlist):
     '''Finds a number closest-down to a given one from a sorted list of numbers.'''
