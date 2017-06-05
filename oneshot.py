@@ -31,7 +31,7 @@ def main():
 
     # override the latter two if pickle specified
     if len(sys.argv) == 2:
-        (bidstore, blocknum) = cancelot.load_pickled_bids(sys.argv[1])
+        (bidstore, blocknum) = cancelot.utils.load_pickled_bids(sys.argv[1])
         bids.store = bidstore
 
     while blocknum <= startblock:
