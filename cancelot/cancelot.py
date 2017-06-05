@@ -63,7 +63,7 @@ class BidInfo(object):
         })
         self.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
 
-        if self.deedaddr != '0x0000000000000000000000000000000000000000' :
+        if self.deedaddr != nulladdr:
             self.deedsize = int(web3.eth.getBalance(self.deedaddr))
         else:
             self.deedsize = 0 # null-address is not a deed ;)
@@ -241,7 +241,7 @@ def gasprice_range(bid):
     reward = 0.005 # 0.5%
 
     bid.update_deed_info()
-    if bid.deedaddr == '0x0000000000000000000000000000000000000000': # FIXME: zero-addr
+    if bid.deedaddr == nulladdr:
         raise Exception('Deed cancelled!')
 
     maximum = int(bid.deedsize * reward / maxgas)
