@@ -1,3 +1,9 @@
+# FIXME: refs to web3 object
+
+import utils
+
+DAYS19 = 1641600 # bid validity period - 19 days, in seconds
+
 class BidInfo(object):
     '''Information on a single bid and its deed.'''
     def __init__(self, event):
@@ -39,7 +45,7 @@ class BidInfo(object):
         })
         self.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
 
-        if self.deedaddr != nulladdr:
+        if self.deedaddr != utils.NULLADDR:
             self.deedsize = int(web3.eth.getBalance(self.deedaddr))
         else:
             self.deedsize = 0 # null-address is not a deed ;)

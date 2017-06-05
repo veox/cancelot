@@ -1,6 +1,6 @@
-'''Utility functions bordering on bidding strategy.
+'''Utility functions bordering on bidding strategy (should be removed?).'''
 
-FIXME: Remove?'''
+# FIXME: refs to web3 object
 
 # TODO: turn into Bid{,Info} class function?..
 def cancel_bid(bid, from_, to_ = cancelotaddr, gas = 150000, gasprice = None):

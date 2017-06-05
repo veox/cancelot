@@ -9,14 +9,13 @@ import time
 
 import decimal
 
+# FIXME: module-level web3
 from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider()) # TODO: don't use module-level global
 
-nulladdr = '0x0000000000000000000000000000000000000000'
+NULLADDR = '0x0000000000000000000000000000000000000000'
 registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
-
-DAYS19 = 1641600 # bid validity period - 19 days, in seconds
 
 # FIXME: account selection
 deafaddr = '0xdeaf3515e441067d7f42c2509ec653222537b6eb'
@@ -83,7 +82,7 @@ def cancan(bids, bythistime = None):
             # update deed address and balance
             bidinfo.update_deed_info()
 
-            if bidinfo.deedaddr != nulladdr:
+            if bidinfo.deedaddr != NULLADDR:
                 ret.append(bidinfo)
 
     return ret
@@ -112,7 +111,7 @@ def gasprice_range(bid):
     reward = 0.005 # 0.5%
 
     bid.update_deed_info()
-    if bid.deedaddr == nulladdr:
+    if bid.deedaddr == NULLADDR:
         raise Exception('Deed cancelled!')
 
     maximum = int(bid.deedsize * reward / maxgas)

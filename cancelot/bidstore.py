@@ -1,3 +1,7 @@
+# FIXME: refs to web3 object
+
+import bidinfo
+
 def print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
           '(block ' + str(blocknum) + ').', 'Total:', total)
@@ -29,7 +33,7 @@ def idx_bidcancelled(event):
 
 def handle_newbid(event, bids):
     '''Process NewBid event.'''
-    bid = BidInfo(event)
+    bid = bidinfo.BidInfo(event)
     idx =  bid.bidder + bid.seal # FIXME: hard-coded indexing pattern
     bids[idx] = bid
     print_handled(bid.bidder, bid.seal, 'added', event['blockNumber'], len(bids))
