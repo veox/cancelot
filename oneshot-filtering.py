@@ -20,11 +20,12 @@ def main():
     bids = cancelot.BidStore(web3)
     # for processing historic blocks in batches
     blocknum = cancelot.utils.ENSLAUNCHBLOCK
-    blockbatchsize = 1000
+    blockbatchsize = 10000
 
     # override the latter two if pickle specified
     if len(sys.argv) == 2:
-        (bids, blocknum) = cancelot.load_pickled_bids(sys.argv[1])
+        (bidstore, blocknum) = cancelot.load_pickled_bids(sys.argv[1])
+        bids.store = bidstore
 
     while blocknum <= startblock:
         filt = web3.eth.filter({
@@ -38,12 +39,12 @@ def main():
         bids.handle_events(events)
 
         # DEBUG save progress
-        cancelot.utils.pickle_bids(bids, starttime, blocknum)
+        cancelot.utils.pickle_bids(bids.store, starttime, blocknum)
 
         blocknum += blockbatchsize
 
     # having finished, save unconditionally
-    cancelot.utils.pickle_bids(bids, starttime, blocknum)
+    cancelot.utils.pickle_bids(bids.store, starttime, blocknum)
 
     return # main()
 

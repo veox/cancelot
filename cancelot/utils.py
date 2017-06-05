@@ -62,7 +62,7 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
     # 1495630192-3759000.pickle
     filename = str(starttime) + '-' + str(blocknum) + '.pickle'
     # FIXME: assumption that `bids` is a `BidStore`
-    print('>>>>> Writing', len(bids.store), 'bids to', filename)
+    print('>>>>> Writing', len(bids), 'bids to', filename)
 
     with open(filename, 'wb') as fd:
         pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
