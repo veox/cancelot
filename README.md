@@ -8,6 +8,13 @@ The bot is a Python script that connects to a local node over IPC, scans for
 placed sealed bids, and tracks which of those haven't been revealed. Once
 their expiration timestamp is reached, a call is made to cancel the bid.
 
+The bot is coprophagous in nature, cleaning up the blockchain while
+simultaneosly rewarding its operator.
+
+FIXME: Currently not a lib-like package, but a collection of scripts.
+
+FIXME: Several "bidding strategy" helpers made it into the package.
+
 ## Installation
 
 ``` sh
@@ -19,7 +26,11 @@ pip install -r requirements.txt
 pip install -e . # FIXME: not working yet - not a proper package
 ```
 
-## Notes
+## Usage
+
+FIXME: Awkward.
+
+## Random notes
 
 First direct tx after creation was on block 3648565:
 

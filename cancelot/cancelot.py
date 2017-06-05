@@ -81,7 +81,7 @@ def print_handled(bidder, seal, action, blocknum, total):
 def handle_newbid(event, bids):
     '''Process NewBid event.'''
     bid = BidInfo(event)
-    idx =  bid.bidder + bid.seal # FIXME: don't index so repetitively, use some BidStore
+    idx =  bid.bidder + bid.seal # FIXME: hard-coded indexing pattern
     bids[idx] = bid
     print_handled(bid.bidder, bid.seal, 'added', event['blockNumber'], len(bids))
     return
@@ -94,8 +94,8 @@ def idx_bidrevealed(event, bidder):
     # get salt from transaction data - it's not logged :/
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
     # get value from here, too - logged one might be changed due to `value = min(_value, bid.value())`
-    _offset = 2+8+64 # 2 for '0x', 8 for function signature, 64 for bytes(32).hex() hash
-    value = '0x' + tx['input'][_offset:_offset+64]
+    OFFSET = 2+8+64 # 2 for '0x', 8 for function signature, 64 for bytes(32).hex() hash
+    value = '0x' + tx['input'][OFFSET:OFFSET+64]
     # get other from logged event (FIXME: get from tx, too?.. what the hell...)
     thishash = event['topics'][1]
     # calculate seal (used as part of index)
@@ -169,12 +169,12 @@ class BidStore(object):
         if type(events) is not dict:
             raise TypeError('Event expected to be a dict!')
 
-        fp = event['topics'][0]
+        fp = ev['topics'][0]
         handler = self.handlers[fp] if self.handlers.get(fp) else None # TODO: handler managing
 
-        # handle matches
         if handler:
-            handler(event, self.store) # FIXME: passing store around :/
+            # got match - handle as specified
+            handler(ev, self.store) # FIXME: passing store around :/
         else:
             # unhandled events are currently allowed
             pass
