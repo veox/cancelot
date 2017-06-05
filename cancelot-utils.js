@@ -16,7 +16,7 @@ function closestDown(num, arr) {
 }
 
 // TODO: get from http://ethgasstation.info/hashPowerTable.php
-var gasPricesInShannon = [1, 4, 12, 15, 18, 20, 24, 25, 27, 40]; // 2017-06-01
+var gasPricesInShannon = [1, 4, 16, 18, 20, 27, 40]; // 2017-06-05
 
 function cancelotGP(bidder, seal) {
     var minGas = 28177; // see tx 0x2a8411294620fb0b5c5bbf710e7aeddbfb48c778c4a8d56e90a7cb51851016d6
