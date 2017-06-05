@@ -93,7 +93,7 @@ class BidStore(object):
         '''Process BidRevealed event.
 
         Since BidRevealed and BidCancelled are not differentiated in the temporary
-        registrar, they both have to be handled here.'''
+        registrar, looking up the key for both has to be attempted here.'''
 
         try:
             key = self._key_from_reveal_event(event)

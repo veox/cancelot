@@ -10,7 +10,11 @@ from web3 import Web3, IPCProvider
 import cancelot
 
 # DEBUG
-pickleatblocknums = [3664565]
+pickleatblocknums = [
+    3664565, # a little before first reveal event
+    3666565  # ~ 800 blocks before first cancellation
+
+]
 
 def main():
     web3 = Web3(IPCProvider())
