@@ -71,6 +71,7 @@ class BidInfo(object):
         return
 
 def now():
+    '''Shorthand.'''
     return int(time.time())
 
 def print_handled(bidder, seal, action, blocknum, total):
@@ -147,18 +148,38 @@ handlers = {
     '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': handle_bidrevealed
 }
 
-def check_event_log(event, bids):
-    fp = event['topics'][0]
-    handle = handlers[fp] if handlers.get(fp) else None
+class BidStore(object):
+    '''Multiple-BidInfo store with indexed look-up.'''
+    def __init__(self):
+        self.store = {}
+        self.handlers = handlers
+        return
 
-    # handle matches
-    if handle:
-        # print('tx', receipt['transactionHash'],
-        #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
-        #       'has event', topic)
-        handle(event, bids)
+    def handle_events(self, events):
+        '''Wrapper to process a list of events.'''
 
-    return
+        for ev in events:
+            self.handle_event(ev)
+
+        return
+
+    def handle_event(self, ev):
+        '''Changes store based on type of event.'''
+
+        if type(events) is not dict:
+            raise TypeError('Event expected to be a dict!')
+
+        fp = event['topics'][0]
+        handler = self.handlers[fp] if self.handlers.get(fp) else None # TODO: handler managing
+
+        # handle matches
+        if handler:
+            handler(event, self.store) # FIXME: passing store around :/
+        else:
+            # unhandled events are currently allowed
+            pass
+
+        return
 
 def check_tx_receipt(receipt, bids):
     logs = receipt['logs']

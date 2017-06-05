@@ -17,7 +17,7 @@ def main():
     startblock = web3.eth.blockNumber
 
     # 'msg.sender' + 'sealedBid -> BidInfo
-    bids = {}
+    bids = cancelot.BidStore()
     # for processing historic blocks in batches
     blocknum = cancelot.enslaunchblock
     blockbatchsize = 1000
@@ -35,8 +35,7 @@ def main():
         events = filt.get(only_changes = False)
         web3.eth.uninstallFilter(filt.filter_id) # TODO: can filter be modified instead?
 
-        for ev in events:
-            cancelot.check_event_log(ev, bids)
+        bids.handle(events)
 
         blocknum += blockbatchsize
 
