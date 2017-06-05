@@ -85,7 +85,7 @@ class BidStore(object):
         self.store[key] = bid
 
         # DEBUG
-        _print_handled(bid.bidder, bid.seal, 'added', bid.timeplaced, len(self.store))
+        _print_handled(bid.bidder, bid.seal, 'added', bid.blockplaced, len(self.store))
 
         return
 

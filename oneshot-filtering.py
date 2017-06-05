@@ -37,10 +37,13 @@ def main():
 
         bids.handle_events(events)
 
+        # DEBUG save progress
+        cancelot.utils.pickle_bids(bids, starttime, blocknum)
+
         blocknum += blockbatchsize
 
     # having finished, save unconditionally
-    cancelot.pickle_bids(bids, starttime, blocknum)
+    cancelot.utils.pickle_bids(bids, starttime, blocknum)
 
     return # main()
 
