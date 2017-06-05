@@ -23,7 +23,7 @@ def main():
     bids = cancelot.BidStore(web3)
     # for processing historic blocks in batches
     blocknum = cancelot.utils.ENSLAUNCHBLOCK
-    blockbatchsize = 1000
+    blockbatchsize = 100
 
     # override the latter two if pickle specified
     if len(sys.argv) == 2:
