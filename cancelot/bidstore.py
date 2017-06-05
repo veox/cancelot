@@ -7,7 +7,9 @@ import bidinfo
 def _print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
           '(block ' + str(blocknum) + ').', 'Total:', total)
+    return
 
+# FIXME: less rigid indexing
 def _idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
     '''Reconstructs our lookup index from logged timely reveal event.'''
 
@@ -25,6 +27,7 @@ def _idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
 
     return bidder + seal
 
+# FIXME: less rigid indexing
 def _idx_bidcancelled(event):
     '''Reconstructs our lookup index from logged cancellation event.'''
 
@@ -104,7 +107,7 @@ class BidStore(object):
         '''Changes store based on type of event.'''
 
         fp = ev['topics'][0]
-        handler = self.handlers[fp] if self.handlers.get(fp) else None # TODO: handler managing
+        handler = self.handlers[fp] if self.handlers.get(fp) else None # TODO: handler managing?
 
         if handler:
             # got match - handle as specified
