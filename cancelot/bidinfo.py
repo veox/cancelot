@@ -46,7 +46,7 @@ class BidInfo(object):
     def update_deed_info(self):
         # look up sealedBids[msg.sender][seal] and its balance
         retval = self.web3.eth.call({
-            'to': registrar,
+            'to': utils.REGISTRAR,
             'data': '0x5e431709' + '00'*12 + self.bidder[2:] + self.seal[2:]
         })
         self.deedaddr = '0x' + retval[-40:] # 20 bytes from the end

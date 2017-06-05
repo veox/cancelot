@@ -14,11 +14,10 @@ from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider()) # TODO: don't use module-level global
 
 NULLADDR = '0x0000000000000000000000000000000000000000'
-registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
-enslaunchblock = 3648565
+REGISTRAR = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
+ENSLAUNCHBLOCK = 3648565
 
-# FIXME: account selection
-DEAFADDR = '0xdeaf3515e441067d7f42c2509ec653222537b6eb'
+# FIXME: hard-coded
 CANCELOTADDR = '0xC9C7Db3C7a2e3b8AcA6E6F78180F7013575392a3'
 
 def now():

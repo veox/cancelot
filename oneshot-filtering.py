@@ -13,13 +13,13 @@ def main():
     web3 = Web3(IPCProvider())
 
     # log/state filenames and loop limiting
-    starttime = cancelot.now()
+    starttime = cancelot.utils.now()
     startblock = web3.eth.blockNumber
 
     # 'msg.sender' + 'sealedBid -> BidInfo
     bids = cancelot.BidStore(web3)
     # for processing historic blocks in batches
-    blocknum = cancelot.enslaunchblock
+    blocknum = cancelot.utils.ENSLAUNCHBLOCK
     blockbatchsize = 1000
 
     # override the latter two if pickle specified
@@ -30,12 +30,12 @@ def main():
         filt = web3.eth.filter({
             'fromBlock': blocknum,
             'toBlock': blocknum + blockbatchsize,
-            'address': cancelot.registrar #,'topics': list(cancelot.handlers.keys())
+            'address': cancelot.utils.REGISTRAR #,'topics': list(cancelot.handlers.keys())
         })
         events = filt.get(only_changes = False)
         web3.eth.uninstallFilter(filt.filter_id) # TODO: can filter be modified instead?
 
-        bids.handle(events)
+        bids.handle_events(events)
 
         blocknum += blockbatchsize
 
