@@ -1,3 +1,5 @@
+import decimal
+
 import utils
 
 DAYS19 = 1641600 # bid validity period - 19 days, in seconds
@@ -14,7 +16,7 @@ class BidInfo(object):
         self.bidder = '0x' + event['topics'][2][-40:] # 20 bytes from the end
         self.seal = event['topics'][1]
 
-        # these two are not set by default, to save on IPC requests
+        # save on IPC requests - most bids will be revealed soon
         self.deedaddr = None
         self.deedsize = None
         
@@ -22,6 +24,8 @@ class BidInfo(object):
 
     def __str__(self):
         unit = 'finney'
+
+        # make sure printed info is as up-to-date as possible
         self.update_deed_info()
 
         ret = ''
