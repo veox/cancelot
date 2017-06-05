@@ -4,7 +4,6 @@
 # License: All rights reserved. Forbidden to distribute.
 
 import sys
-import time
 
 from web3 import Web3, IPCProvider
 
@@ -14,34 +13,33 @@ def main():
     web3 = Web3(IPCProvider())
 
     # log/state filenames and loop limiting
-    starttime = int(time.time())
+    starttime = cancelot.now()
     startblock = web3.eth.blockNumber
-    # "start" one block behind, to capture the `enslaunchblock` with increment-first loop
-    blocknum = cancelot.enslaunchblock - 1
 
     # 'msg.sender' + 'sealedBid -> BidInfo
     bids = {}
+    # for processing historic blocks in batches
+    blocknum = cancelot.enslaunchblock
+    blockbatchsize = 1000
 
-    # use existing pickle if provided
+    # override the latter two if pickle specified
     if len(sys.argv) == 2:
         (bids, blocknum) = cancelot.load_pickled_bids(sys.argv[1])
 
-    # FIXME: should be filtering messages - do rework in continuous.py
-    # loop until blocknum == startblock
-    while blocknum < startblock:
-        blocknum += 1
-        txcount = web3.eth.getBlockTransactionCount(blocknum)
-        if txcount == 0: continue # short-circuit
+    while blocknum <= startblock:
+        filt = web3.eth.filter({
+            'fromBlock': blocknum,
+            'toBlock': blocknum + blockbatchsize,
+            'address': cancelot.registrar #,'topics': list(cancelot.handlers.keys())
+        })
+        events = filt.get(only_changes = False)
+        web3.eth.uninstallFilter(filt.filter_id) # TODO: can filter be modified instead?
 
-        # iterate over transactions
-        for txi in range(txcount):
-            tx = web3.eth.getTransactionFromBlock(blocknum, hex(txi)) # hex(txi) - bug?..
-            if tx['to'] == cancelot.registrar:
-                cancelot.check_tx(tx, bids)
+        for ev in events:
+            cancelot.check_event_log(ev, bids)
 
-        # write to file once in a while (full run takes an hour or more...)
-        if int(blocknum)%10000 == 0:
-            cancelot.pickle_bids(bids, starttime, blocknum)
+        blocknum += blockbatchsize
+
     # having finished, save unconditionally
     cancelot.pickle_bids(bids, starttime, blocknum)
 

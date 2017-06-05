@@ -147,20 +147,25 @@ handlers = {
     '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': handle_bidrevealed
 }
 
+def check_event_log(event, bids):
+    fp = event['topics'][0]
+    handle = handlers[fp] if handlers.get(fp) else None
+
+    # handle matches
+    if handle:
+        # print('tx', receipt['transactionHash'],
+        #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
+        #       'has event', topic)
+        handle(receipt['from'], event, bids)
+
+    return
+
 def check_tx_receipt(receipt, bids):
     logs = receipt['logs']
 
     # iterate through events, looking for known fingerprints
     for event in logs:
-        fp = event['topics'][0]
-        handle = handlers[fp] if handlers.get(fp) else None
-
-        # handle matches
-        if handle:
-            # print('tx', receipt['transactionHash'],
-            #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
-            #       'has event', topic)
-            handle(receipt['from'], event, bids)
+        check_event_log(event, bids)
 
     return
 
