@@ -1,12 +1,14 @@
 # FIXME: refs to web3 object
 
+import pprint # debug-print on exception
+
 import bidinfo
 
-def print_handled(bidder, seal, action, blocknum, total):
+def _print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
           '(block ' + str(blocknum) + ').', 'Total:', total)
 
-def idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
+def _idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
     '''Reconstructs our lookup index from logged timely reveal event.'''
 
     # FIXME: we've already retrieved this before, way down in the stack!
@@ -23,15 +25,15 @@ def idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
 
     return bidder + seal
 
-def idx_bidcancelled(event):
+def _idx_bidcancelled(event):
     '''Reconstructs our lookup index from logged cancellation event.'''
 
     seal = event['topics'][1]
     bidder = event['topics'][2][-40:] # 20 bytes from the end
 
-    return '0x' + bidder + seal # TODO: get these '0x' under control, will ya?..
+    return '0x' + bidder + seal # FIXME: hard-coded indexing pattern
 
-def handle_newbid(event, bids):
+def _handle_newbid(event, bids):
     '''Process NewBid event.'''
     bid = bidinfo.BidInfo(event)
     idx =  bid.bidder + bid.seal # FIXME: hard-coded indexing pattern
@@ -39,7 +41,7 @@ def handle_newbid(event, bids):
     print_handled(bid.bidder, bid.seal, 'added', event['blockNumber'], len(bids))
     return
 
-def handle_bidrevealed(bidder, event, bids):
+def _handle_bidrevealed(bidder, event, bids):
     '''Process BidRevealed event.
 
     Since BidRevealed and BidCancelled are not differentiated in the temporary
@@ -47,20 +49,20 @@ def handle_bidrevealed(bidder, event, bids):
 
     # UGLY: nested exceptions
     try:
-        idx = idx_bidrevealed(event, bidder)
+        idx = _idx_bidrevealed(event, bidder)
         seal = bids[idx].seal
         del bids[idx]
         action = 'revld'
     except KeyError as e:
         # might be "external cancellation", try that...
         try:
-            idx = idx_bidcancelled(event)
+            idx = _idx_bidcancelled(event)
             seal = bids[idx].seal
             del bids[idx]
             action = 'cancd'
         except KeyError as ee:
             print('='*77 + ' CRAP!!! ' + '='*77)
-            print('idx: ', idx_bidcancelled(event))
+            print('idx: ', _idx_bidcancelled(event))
             print('='*163)
             pprint.pprint(event)
             print('='*163)
@@ -73,19 +75,25 @@ def handle_bidrevealed(bidder, event, bids):
 
 # event fingerprint -> handler function
 _handlers = {
-    '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': handle_newbid,
-    '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': handle_bidrevealed
+    '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': _handle_newbid,
+    '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': _handle_bidrevealed
 }
 
 class BidStore(object):
     '''Multiple-BidInfo store with indexed look-up.'''
     def __init__(self):
+        '''Creates an empty dictionary for storage, and assigns default handlers.'''
+
         self.store = {}
         self.handlers = _handlers
+
         return
 
     def handle_events(self, events):
         '''Wrapper to process a list of events.'''
+
+        if type(events) is not list:
+            raise TypeError('Expecting a list (of dicts)!')
 
         for ev in events:
             self.handle_event(ev)
@@ -94,9 +102,6 @@ class BidStore(object):
 
     def handle_event(self, ev):
         '''Changes store based on type of event.'''
-
-        if type(events) is not dict:
-            raise TypeError('Event expected to be a dict!')
 
         fp = ev['topics'][0]
         handler = self.handlers[fp] if self.handlers.get(fp) else None # TODO: handler managing
