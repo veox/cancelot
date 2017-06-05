@@ -312,7 +312,7 @@ def process_bidlist(bidlist, fromaddr = deafaddr, gpsafe = None, timeoffset = 0)
         except:
             continue
 
-        # ???
+        # FIXME: gas selection - screwed up
         if gpmax < gpsafe:
             gasprice = gprec
         else:

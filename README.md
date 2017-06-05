@@ -8,6 +8,17 @@ The bot is a Python script that connects to a local node over IPC, scans for
 placed sealed bids, and tracks which of those haven't been revealed. Once
 their expiration timestamp is reached, a call is made to cancel the bid.
 
+## Installation
+
+``` sh
+export VIRTUAL_ENV=.virtualenv/cancelot
+mkdir -p $VIRTUAL_ENV
+virtualenv $VIRTUAL_ENV
+source $VIRTUAL_ENV/bin/activate
+pip install -r requirements.txt
+pip install -e . # FIXME: not working yet - not a proper package
+```
+
 ## Notes
 
 First direct tx after creation was on block 3648565:
