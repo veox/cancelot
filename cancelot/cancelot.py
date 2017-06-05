@@ -77,12 +77,12 @@ def print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
           '(block ' + str(blocknum) + ').', 'Total:', total)
 
-def handle_newbid(bidder, event, bids):
+def handle_newbid(event, bids):
     '''Process NewBid event.'''
-    seal = event['topics'][1]
-    idx =  bidder + seal
-    bids[idx] = BidInfo(event)
-    print_handled(bidder, seal, 'added', event['blockNumber'], len(bids))
+    bid = BidInfo(event)
+    idx =  bid.bidder + bid.seal # FIXME: don't index so repetitively, use some BidStore
+    bids[idx] = bid
+    print_handled(bid.bidder, bid.seal, 'added', event['blockNumber'], len(bids))
     return
 
 def idx_bidrevealed(event, bidder):
@@ -156,7 +156,7 @@ def check_event_log(event, bids):
         # print('tx', receipt['transactionHash'],
         #       'in block', receipt['blockHash'], '(' + str(receipt['blockNumber']) + ')',
         #       'has event', topic)
-        handle(receipt['from'], event, bids)
+        handle(event, bids)
 
     return
 
