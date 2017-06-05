@@ -12,7 +12,7 @@ def _idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
     '''Reconstructs our lookup index from logged timely reveal event.'''
 
     # salt is not logged, so must be reconstructed from transaction
-    tx = self.web3.eth.getTransaction(event['transactionHash'])
+    tx = web3.eth.getTransaction(event['transactionHash'])
     # get salt from transaction data - it's not logged :/
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
     # get value from here, too - logged one might be changed due to `value = min(_value, bid.value())`
@@ -21,7 +21,7 @@ def _idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
     # get other from logged event (FIXME: get from tx, too?.. what the hell...)
     thishash = event['topics'][1]
     # calculate seal (used as part of index)
-    seal = self.web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
+    seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
 
     return bidder + seal
 
@@ -34,19 +34,13 @@ def _idx_bidcancelled(event):
 
     return '0x' + bidder + seal # FIXME: hard-coded indexing pattern
 
-def _handle_newbid(event, bids):
-    '''Process NewBid event.'''
-    bid = bidinfo.BidInfo(event)
-    idx =  bid.bidder + bid.seal # FIXME: hard-coded indexing pattern
-    bids[idx] = bid
-    print_handled(bid.bidder, bid.seal, 'added', event['blockNumber'], len(bids))
-    return
-
-def _handle_bidrevealed(bidder, event, bids):
+def _handle_bidrevealed(event, bids):
     '''Process BidRevealed event.
 
     Since BidRevealed and BidCancelled are not differentiated in the temporary
     registrar, they both have to be handled here.'''
+
+    bidder = FIXME
 
     # UGLY: nested exceptions
     try:
@@ -73,11 +67,18 @@ def _handle_bidrevealed(bidder, event, bids):
 
     return
 
+def _handle_newbid(event, bids):
+    '''Process NewBid event.'''
+    bid = bidinfo.BidInfo(event)
+    idx =  bid.bidder + bid.seal # FIXME: hard-coded indexing pattern
+    bids[idx] = bid
+    print_handled(bid.bidder, bid.seal, 'added', event['blockNumber'], len(bids))
+    return
 
 # event fingerprint -> handler function
 _handlers = {
-    '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': _handle_newbid,
-    '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': _handle_bidrevealed
+    '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': _handle_bidrevealed,
+    '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': _handle_newbid
 }
 
 class BidStore(object):
