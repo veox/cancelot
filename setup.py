@@ -3,7 +3,7 @@
 import os.path
 from distutils.core import setup
 
-exec(open('./cancelot/version.py').read())
+exec(open('./cancelot/metadata.py').read())
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
