@@ -17,7 +17,7 @@ def main():
     startblock = web3.eth.blockNumber
 
     # 'msg.sender' + 'sealedBid -> BidInfo
-    bids = cancelot.BidStore()
+    bids = cancelot.BidStore(web3)
     # for processing historic blocks in batches
     blocknum = cancelot.enslaunchblock
     blockbatchsize = 1000

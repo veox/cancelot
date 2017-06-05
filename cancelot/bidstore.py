@@ -1,5 +1,3 @@
-# FIXME: refs to web3 object
-
 import pprint # debug-print on exception
 
 import bidinfo
@@ -13,8 +11,8 @@ def _print_handled(bidder, seal, action, blocknum, total):
 def _idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
     '''Reconstructs our lookup index from logged timely reveal event.'''
 
-    # FIXME: we've already retrieved this before, way down in the stack!
-    tx = web3.eth.getTransaction(event['transactionHash'])
+    # salt is not logged, so must be reconstructed from transaction
+    tx = self.web3.eth.getTransaction(event['transactionHash'])
     # get salt from transaction data - it's not logged :/
     salt = '0x' + tx['input'][-64:] # 32 bytes from the end
     # get value from here, too - logged one might be changed due to `value = min(_value, bid.value())`
@@ -23,7 +21,7 @@ def _idx_bidrevealed(event, bidder): # FIXME: don't pass `bidder`
     # get other from logged event (FIXME: get from tx, too?.. what the hell...)
     thishash = event['topics'][1]
     # calculate seal (used as part of index)
-    seal = web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
+    seal = self.web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
 
     return bidder + seal
 
@@ -84,9 +82,10 @@ _handlers = {
 
 class BidStore(object):
     '''Multiple-BidInfo store with indexed look-up.'''
-    def __init__(self):
+    def __init__(self, web3):
         '''Creates an empty dictionary for storage, and assigns default handlers.'''
 
+        self.web3 = web3
         self.store = {}
         self.handlers = _handlers
 
