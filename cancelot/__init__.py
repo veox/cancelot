@@ -1,7 +1,7 @@
 from bidinfo import BidInfo
 from bidstore import BidStore
 
-import util
+import utils
 import strategy
 
-__all__ = [BidInfo, BidStore, util, strategy]
+__all__ = [BidInfo, BidStore, utils, strategy]
