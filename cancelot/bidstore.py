@@ -109,6 +109,6 @@ class BidStore(object):
             del self.store[key]
 
         # DEBUG
-        _print_handled(bidder, seal, action, event['blockNumber'], len(bids))
+        _print_handled(bidder, seal, action, event['blockNumber'], len(self.store))
 
-        return bid
+        return
