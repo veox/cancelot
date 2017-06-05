@@ -9,6 +9,9 @@ from web3 import Web3, IPCProvider
 
 import cancelot
 
+# DEBUG
+pickleatblocknums = [3664565]
+
 def main():
     web3 = Web3(IPCProvider())
 
@@ -20,7 +23,7 @@ def main():
     bids = cancelot.BidStore(web3)
     # for processing historic blocks in batches
     blocknum = cancelot.utils.ENSLAUNCHBLOCK
-    blockbatchsize = 10000
+    blockbatchsize = 1000
 
     # override the latter two if pickle specified
     if len(sys.argv) == 2:
@@ -39,7 +42,8 @@ def main():
         bids.handle_events(events)
 
         # DEBUG save progress
-        cancelot.utils.pickle_bids(bids.store, starttime, blocknum)
+        if blocknum in pickleatblocknums:
+            cancelot.utils.pickle_bids(bids.store, starttime, blocknum)
 
         blocknum += blockbatchsize
 
