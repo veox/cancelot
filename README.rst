@@ -1,8 +1,10 @@
-# Cancelot
+Cancelot
+========
 
-A bot to cancel bids in the ENS `.eth` Registrar that were never revealed.
+A bot to cancel bids in the ENS ``.eth`` Registrar that were never revealed.
 
-## Overview
+Overview
+--------
 
 The bot is a Python script that connects to a local node over IPC, scans for
 placed sealed bids, and tracks which of those haven't been revealed. Once
@@ -15,22 +17,25 @@ FIXME: Currently not a lib-like package, but a collection of scripts.
 
 FIXME: Several "bidding strategy" helpers made it into the package.
 
-## Installation
+Installation
+------------
 
-``` sh
-export VIRTUAL_ENV=.virtualenv/cancelot
-mkdir -p $VIRTUAL_ENV
-virtualenv $VIRTUAL_ENV
-source $VIRTUAL_ENV/bin/activate
-pip install -r requirements.txt
-pip install -e . # FIXME: not working yet - not a proper package
-```
+.. codeblock: sh
 
-## Usage
+   export VIRTUAL_ENV=.virtualenv/cancelot
+   mkdir -p $VIRTUAL_ENV
+   virtualenv $VIRTUAL_ENV
+   source $VIRTUAL_ENV/bin/activate
+   pip install -r requirements.txt
+   pip install -e . # FIXME: not working yet - not a proper package
+
+Usage
+-----
 
 FIXME: Awkward.
 
-## Random notes
+Random notes
+------------
 
 First direct tx after creation was on block 3648565:
 
