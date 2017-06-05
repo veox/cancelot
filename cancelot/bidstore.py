@@ -77,7 +77,7 @@ class BidStore(object):
     def _add(self, event):
         '''Process NewBid event.'''
 
-        bid = BidInfo(event)
+        bid = BidInfo(event, self.web3)
         key = _key_from_bidinfo(bid)
 
         if self.store.get(key):
