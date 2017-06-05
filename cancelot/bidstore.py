@@ -95,18 +95,24 @@ class BidStore(object):
         Since BidRevealed and BidCancelled are not differentiated in the temporary
         registrar, looking up the key for both has to be attempted here.'''
 
+        # DEBUG: UGLY nested exception to pretty-print failing event
         try:
-            key = self._key_from_reveal_event(event)
-            seal = self.store[key].seal # might raise KeyError
-            action = 'revld'
-        except KeyError:
-            # might be "external cancellation", try that...
-            key = self._key_from_cancel_event(event)
-            seal = self.store[key].seal
-            action = 'cancd'
-        finally:
-            bidder = key[:42] # '0x' + 40 bytes
-            del self.store[key]
+            try:
+                key = self._key_from_reveal_event(event)
+                seal = self.store[key].seal # might raise KeyError
+                action = 'revld'
+            except KeyError:
+                # might be "external cancellation", try that...
+                key = self._key_from_cancel_event(event)
+                seal = self.store[key].seal
+                action = 'cancd'
+            finally:
+                bidder = key[:42] # '0x' + 40 bytes
+                del self.store[key]
+        except Exception as e:
+            import pprint
+            pprint.pprint(event)
+            raise e
 
         # DEBUG
         _print_handled(bidder, seal, action, event['blockNumber'], len(self.store))
