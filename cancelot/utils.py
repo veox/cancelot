@@ -66,6 +66,7 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
 
     with open(filename, 'wb') as fd:
         pickle.dump(bids, fd, pickle.HIGHEST_PROTOCOL)
+    print('>>>>> Done!')
 
     return
 
