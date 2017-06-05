@@ -1,4 +1,4 @@
-from bidinfo import Bidinfo
+from .bidinfo import BidInfo
 
 def _print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
@@ -43,10 +43,10 @@ class BidStore(object):
         return
 
     # TODO: rework indexing for same-pair bidder+seal bids
-    def _key_from_bidinfo(bid: BidInfo):
+    def _key_from_bidinfo(self, bid: BidInfo):
         return bid.bidder + bid.seal
 
-    def _key_from_reveal_event(event: dict):
+    def _key_from_reveal_event(self, event: dict):
         '''Reconstructs our lookup index from logged timely reveal event.'''
 
         bidder = FIXME
@@ -66,7 +66,7 @@ class BidStore(object):
         return bidder + seal
 
     # FIXME: less rigid indexing
-    def _key_from_cancel_event(event: dict):
+    def _key_from_cancel_event(self, event: dict):
         '''Reconstructs our lookup index from logged cancellation event.'''
 
         seal = event['topics'][1] # with '0x' up front
@@ -78,7 +78,7 @@ class BidStore(object):
         '''Process NewBid event.'''
 
         bid = BidInfo(event, self.web3)
-        key = _key_from_bidinfo(bid)
+        key = self._key_from_bidinfo(bid)
 
         if self.store.get(key):
             print('WARNING! Writing over existing key', key, 'in store!')
@@ -99,16 +99,16 @@ class BidStore(object):
         bid = FIXME
 
         try:
-            key = _key_from_reveal_event(event)
+            key = self._key_from_reveal_event(event)
             seal = self.store[key].seal # might raise KeyError
             action = 'revld'
         except KeyError:
             # might be "external cancellation", try that...
-            key = _key_from_cancel_event(event)
+            key = self._key_from_cancel_event(event)
             seal = self.store[key].seal
             action = 'cancd'
         finally:
-            del bids[key]
+            del self.store[key]
 
         # DEBUG
         _print_handled(bidder, seal, action, event['blockNumber'], len(bids))

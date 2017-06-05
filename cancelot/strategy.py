@@ -2,8 +2,10 @@
 
 # FIXME: refs to web3 object
 
+from . import utils
+
 # TODO: turn into Bid{,Info} class function?..
-def cancel_bid(bid, from_, to_ = cancelotaddr, gas = 150000, gasprice = None):
+def cancel_bid(bid, from_, to_ = utils.CANCELOTADDR, gas = 150000, gasprice = None):
     if gasprice == None:
         gasprice = web3.toWei(12, 'shannon')
         print('WARNING: gasprice not specified; forced to', gasprice)
@@ -50,7 +52,7 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
     return txhash
 
 # FIXME: generator, async handler
-def process_bidlist(bidlist, fromaddr = deafaddr, gpsafe = None, timeoffset = 0):
+def process_bidlist(bidlist, fromaddr = utils.DEAFADDR, gpsafe = None, timeoffset = 0):
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
     if gpsafe == None:
         gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners

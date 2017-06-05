@@ -1,6 +1,6 @@
 import decimal
 
-import utils
+from . import utils
 
 DAYS19 = 1641600 # bid validity period - 19 days, in seconds
 

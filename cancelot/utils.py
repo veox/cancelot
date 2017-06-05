@@ -18,8 +18,8 @@ registrar = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 enslaunchblock = 3648565
 
 # FIXME: account selection
-deafaddr = '0xdeaf3515e441067d7f42c2509ec653222537b6eb'
-cancelotaddr = '0xC9C7Db3C7a2e3b8AcA6E6F78180F7013575392a3'
+DEAFADDR = '0xdeaf3515e441067d7f42c2509ec653222537b6eb'
+CANCELOTADDR = '0xC9C7Db3C7a2e3b8AcA6E6F78180F7013575392a3'
 
 def now():
     '''Shorthand.'''
