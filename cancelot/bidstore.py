@@ -78,7 +78,11 @@ class BidStore(object):
         '''Process NewBid event.'''
 
         bid = BidInfo(event)
-        self.store[_key_from_bidinfo(bid)] = bid
+        key = _key_from_bidinfo(bid)
+
+        if self.store.get(key):
+            print('WARNING! Writing over existing key', key, 'in store!')
+        self.store[key] = bid
 
         # DEBUG
         _print_handled(bid.bidder, bid.seal, 'added', bid.timeplaced, len(self.store))
