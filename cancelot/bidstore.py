@@ -49,7 +49,7 @@ class BidStore(object):
     def _key_from_reveal_event(self, event: dict):
         '''Reconstructs our lookup index from logged timely reveal event.'''
 
-        bidder = FIXME
+        bidder = '0x' + event['topics'][2][-40:] # 20 bytes off the end
 
         # salt is not logged, so must be reconstructed from transaction
         tx = self.web3.eth.getTransaction(event['transactionHash'])
@@ -70,9 +70,9 @@ class BidStore(object):
         '''Reconstructs our lookup index from logged cancellation event.'''
 
         seal = event['topics'][1] # with '0x' up front
-        bidder = event['topics'][2][-40:] # 20 bytes from the end
+        bidder = '0x' + event['topics'][2][-40:] # 20 bytes off the end
 
-        return '0x' + bidder + seal
+        return '0x' + bidder[-40:] + '0x' + seal[-64:]
 
     def _add(self, event):
         '''Process NewBid event.'''
@@ -95,9 +95,6 @@ class BidStore(object):
         Since BidRevealed and BidCancelled are not differentiated in the temporary
         registrar, they both have to be handled here.'''
 
-        bidder = FIXME
-        bid = FIXME
-
         try:
             key = self._key_from_reveal_event(event)
             seal = self.store[key].seal # might raise KeyError
@@ -108,6 +105,7 @@ class BidStore(object):
             seal = self.store[key].seal
             action = 'cancd'
         finally:
+            bidder = key[:42] # '0x' + 40 bytes
             del self.store[key]
 
         # DEBUG
