@@ -144,23 +144,32 @@ class BidStore(object):
         Since BidRevealed and BidCancelled are not differentiated in the temporary
         registrar, looking up the key for both has to be attempted here.'''
 
+        key = None
+        bid = None
         try:
-            key = self._key_from_reveal_event(event)
-            bid = self.get(key) # may throw Exception
-            action = 'revld'
-        except Exception:
-            # might be "external cancellation", try that...
-            key = self._key_from_cancel_event(event)
-            bid = self.get(key)
-            action = 'cancd'
-        finally:
-            # get immutable copies (str)
-            bidder = bid.bidder
-            seal = bid.seal
-            # clear bid object
-            self.unset(key)
-
-        # DEBUG
-        _print_handled(bidder, seal, action, event['blockNumber'], self._size)
+            try:
+                key = self._key_from_reveal_event(event)
+                bid = self.get(key) # may throw Exception
+                action = 'revld'
+            except Exception:
+                # might be "external cancellation", try that...
+                key = self._key_from_cancel_event(event)
+                bid = self.get(key) # may throw Exception
+                action = 'cancd'
+            finally:
+                # get immutable copies (str)
+                bidder = bid.bidder
+                seal = bid.seal
+                # clear bid object
+                self.unset(key)
+        except UnboundLocalError as ex:
+            print('FIXME Can not locate bid to remove!')
+            print('FIXME key:   ', key)
+            print('FIXME bidder:', bidder)
+            print('FIXME seal:  ', seal)
+            print('FIXME event:\n', event)
+        else:
+            # DEBUG
+            _print_handled(bidder, seal, action, event['blockNumber'], self._size)
 
         return
