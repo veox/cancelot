@@ -128,9 +128,6 @@ class BidStore(object):
         bid = BidInfo(event, self.web3)
         key = self._key_from_bidinfo(bid)
 
-        if self.get(key):
-            print('WARNING! Writing over existing key', key, 'in store!')
-
         self.set(key, bid)
 
         # DEBUG
