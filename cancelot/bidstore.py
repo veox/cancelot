@@ -12,6 +12,7 @@ class BidStore(object):
 
         self.web3 = web3
         self.store = {}
+        self._size = 0
         self.handlers = {
             '0x7b6c4b278d165a6b33958f8ea5dfb00c8c9d4d0acf1985bef5d10786898bc3e7': self._rem, # BidRevealed
             '0xb556ff269c1b6714f432c36431e2041d28436a73b6c3f19c021827bbdc6bfc29': self._add  # NewBid
@@ -42,9 +43,56 @@ class BidStore(object):
 
         return
 
+    def get(self, key: tuple):
+        '''Returns BidInfo for given (bidder, seal) key, or None if not present.'''
+
+        (bidder, seal) = key
+
+        if self.store.get(bidder):
+            seals = self.store[bidder]
+        else:
+            return None
+
+        return seals[seal] if seals.get(seal) else None
+
+    def set(self, key: tuple, bi: BidInfo):
+        '''Sets a BidInfo for a given (bidder, seal) key.'''
+
+        (bidder, seal) = key
+
+        # create bidder entry if it doesn't exist
+        if not self.store.get(bidder):
+            self.store[bidder] = {}
+        # increase size counter if not rewriting
+        if not self.store[bidder].get(seal):
+            self._size += 1
+        # link the bid info unconditionally
+        self.store[bidder][seal] = bi
+
+        return
+
+    def unset(self, key: tuple):
+        '''Deletes a Bidinfo from the store.'''
+
+        (bidder, seal) = key
+
+        if not self.store.get(bidder):
+            raise Exception('Requested to remove a bidder entry that is not present!')
+        if not self.store[bidder].get(seal):
+            raise Exception('Requested to remove a seal entry that is not present!')
+
+        # clear bid info...
+        del self.store[bidder][seal]
+        self._size -= 1
+        # ... and perhaps the bidder entry, if it's empty
+        if not self.store[bidder]:
+            del self.store[bidder]
+
+        return
+
     # TODO: rework indexing for same-pair bidder+seal bids
     def _key_from_bidinfo(self, bid: BidInfo):
-        return bid.bidder + bid.seal
+        return (bid.bidder, bid.seal)
 
     def _key_from_reveal_event(self, event: dict):
         '''Reconstructs our lookup index from logged timely reveal event.'''
@@ -63,7 +111,7 @@ class BidStore(object):
         # calculate seal (used as part of index)
         seal = self.web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
 
-        return bidder + seal
+        return (bidder, seal)
 
     # FIXME: less rigid indexing
     def _key_from_cancel_event(self, event: dict):
@@ -72,7 +120,7 @@ class BidStore(object):
         seal = event['topics'][1] # with '0x' up front
         bidder = '0x' + event['topics'][2][-40:] # 20 bytes off the end
 
-        return '0x' + bidder[-40:] + '0x' + seal[-64:]
+        return (bidder, seal)
 
     def _add(self, event):
         '''Process NewBid event.'''
@@ -80,12 +128,13 @@ class BidStore(object):
         bid = BidInfo(event, self.web3)
         key = self._key_from_bidinfo(bid)
 
-        if self.store.get(key):
+        if self.get(key):
             print('WARNING! Writing over existing key', key, 'in store!')
-        self.store[key] = bid
+
+        self.set(key, bid)
 
         # DEBUG
-        _print_handled(bid.bidder, bid.seal, 'added', bid.blockplaced, len(self.store))
+        _print_handled(bid.bidder, bid.seal, 'added', bid.blockplaced, self._size)
 
         return
 
@@ -95,26 +144,18 @@ class BidStore(object):
         Since BidRevealed and BidCancelled are not differentiated in the temporary
         registrar, looking up the key for both has to be attempted here.'''
 
-        # DEBUG: UGLY nested exception to pretty-print failing event
         try:
-            try:
-                key = self._key_from_reveal_event(event)
-                seal = self.store[key].seal # might raise KeyError
-                action = 'revld'
-            except KeyError:
-                # might be "external cancellation", try that...
-                key = self._key_from_cancel_event(event)
-                seal = self.store[key].seal
-                action = 'cancd'
-            finally:
-                bidder = key[:42] # '0x' + 40 bytes
-                del self.store[key]
-        except Exception as e:
-            import pprint
-            pprint.pprint(event)
-            raise e
+            key = self._key_from_reveal_event(event)
+            (bidder, seal) = self.get(key) # assigning tuple to None might raise TypeError
+            action = 'revld'
+        except TypeError:
+            # might be "external cancellation", try that...
+            key = self._key_from_cancel_event(event)
+            (bidder, seal) = self.get(key)
+            action = 'cancd'
+        finally:
+            self.unset(key)
 
         # DEBUG
-        _print_handled(bidder, seal, action, event['blockNumber'], len(self.store))
-
+        _print_handled(bidder, seal, action, event['blockNumber'], self._size)
         return
