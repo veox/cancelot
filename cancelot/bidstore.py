@@ -49,9 +49,9 @@ class BidStore(object):
         (bidder, seal) = key
 
         if not self.store.get(bidder):
-            raise Exception('Requested to get a bidder entry that is not present!')
+            raise Exception('Requested to get entry but bidder is not present!', bidder, seal)
         if not self.store[bidder].get(seal):
-            raise Exception('Requested to get a seal entry that is not present!')
+            raise Exception('Requested to get entry but seal is not present!', bidder, seal)
 
         return self.store[bidder][seal]
 
@@ -77,9 +77,9 @@ class BidStore(object):
         (bidder, seal) = key
 
         if not self.store.get(bidder):
-            raise Exception('Requested to remove a bidder entry that is not present!')
+            raise Exception('Requested to remove entry but bidder is not present!', bidder, seal)
         if not self.store[bidder].get(seal):
-            raise Exception('Requested to remove a seal entry that is not present!')
+            raise Exception('Requested to remove entry but seal is not present!', bidder, seal)
 
         # clear bid info...
         del self.store[bidder][seal]
