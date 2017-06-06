@@ -128,7 +128,10 @@ class BidStore(object):
         bid = BidInfo(event, self.web3)
         key = self._key_from_bidinfo(bid)
 
+        presize = self._size
         self.set(key, bid)
+        if presize == self._size:
+            print('WARNING! Store size has not changed on write!')
 
         # DEBUG
         _print_handled(bid.bidder, bid.seal, 'added', bid.blockplaced, self._size)
