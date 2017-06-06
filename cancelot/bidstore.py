@@ -44,16 +44,16 @@ class BidStore(object):
         return
 
     def get(self, key: tuple):
-        '''Returns BidInfo for given (bidder, seal) key, or None if not present.'''
+        '''Returns BidInfo for given (bidder, seal) key.'''
 
         (bidder, seal) = key
 
-        if self.store.get(bidder):
-            seals = self.store[bidder]
-        else:
-            return None
+        if not self.store.get(bidder):
+            raise Exception('Requested to get a bidder entry that is not present!')
+        if not self.store[bidder].get(seal):
+            raise Exception('Requested to get a seal entry that is not present!')
 
-        return seals[seal] if seals.get(seal) else None
+        return self.store[bidder][seal]
 
     def set(self, key: tuple, bi: BidInfo):
         '''Sets a BidInfo for a given (bidder, seal) key.'''
@@ -146,16 +146,21 @@ class BidStore(object):
 
         try:
             key = self._key_from_reveal_event(event)
-            (bidder, seal) = self.get(key) # assigning tuple to None might raise TypeError
+            bid = self.get(key) # may throw Exception
             action = 'revld'
-        except TypeError:
+        except Exception:
             # might be "external cancellation", try that...
             key = self._key_from_cancel_event(event)
-            (bidder, seal) = self.get(key)
+            bid = self.get(key)
             action = 'cancd'
         finally:
+            # get immutable copies (str)
+            bidder = bid.bidder
+            seal = bid.seal
+            # clear bid object
             self.unset(key)
 
         # DEBUG
         _print_handled(bidder, seal, action, event['blockNumber'], self._size)
+
         return
