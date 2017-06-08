@@ -7,6 +7,12 @@ def _print_handled(bidder, seal, action, blocknum, total):
           '(block ' + str(blocknum) + ').', 'Total:', total)
     return
 
+class LookupError(Exception):
+    def __init__(self, address, bytes32, message):
+        self.address = address
+        self.bytes32 = bytes32
+        self.message = message
+
 class BidStore(object):
     '''Multiple-BidInfo store with indexed look-up.'''
     def __init__(self, web3):
@@ -45,20 +51,20 @@ class BidStore(object):
 
         return
 
-    def _present(self, key: tuple):
+    def _raise_if_not_in_store(self, key: tuple):
         (address, bytes32) = key
 
         if not self.store.get(address):
-            return False
+            raise LookupError('address not in store', address, bytes32)
         if not self.store[address].get(bytes32):
-            return False
+            raise LookupError('bytes32 not in store', address, bytes32)
 
-        return True
+        return
 
     def get(self, key: tuple):
         '''Returns BidInfo for given (bidder, seal) key.'''
 
-        assert(self._present(key))
+        self._raise_if_not_in_store(key)
 
         (bidder, seal) = key
 
@@ -83,9 +89,9 @@ class BidStore(object):
     def unset(self, key: tuple):
         '''Removes a Bidinfo from the store.'''
 
-        assert(self._present(key))
-
         (bidder, seal) = key
+
+        self._raise_if_not_in_store(key)
 
         # clear bid info...
         del self.store[bidder][seal]
@@ -158,7 +164,7 @@ class BidStore(object):
             key = self._key_from_reveal_event(event)
             bid = self.get(key) # may raise
             action = 'revld'
-        except Exception as e:
+        except LookupError as e:
             # might be "external cancellation", will try that...
             errors.append(e)
 
@@ -167,7 +173,7 @@ class BidStore(object):
             key = self._key_from_cancel_event(event)
             bid = self.get(key) # may raise
             action = 'cancd'
-        except Exception as e:
+        except LookupError as e:
             errors.append(e)
 
         if errors:
