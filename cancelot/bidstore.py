@@ -1,9 +1,17 @@
+import pprint # in exception handling
+
 from .bidinfo import BidInfo
 
 def _print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
           '(block ' + str(blocknum) + ').', 'Total:', total)
     return
+
+class LookupError(Exception):
+    def __init__(self, address, bytes32, message):
+        self.address = address
+        self.bytes32 = bytes32
+        self.message = message
 
 class BidStore(object):
     '''Multiple-BidInfo store with indexed look-up.'''
@@ -43,15 +51,22 @@ class BidStore(object):
 
         return
 
+    def _raise_if_not_in_store(self, key: tuple):
+        (address, bytes32) = key
+
+        if not self.store.get(address):
+            raise LookupError('address not in store', address, bytes32)
+        if not self.store[address].get(bytes32):
+            raise LookupError('bytes32 not in store', address, bytes32)
+
+        return
+
     def get(self, key: tuple):
         '''Returns BidInfo for given (bidder, seal) key.'''
 
-        (bidder, seal) = key
+        self._raise_if_not_in_store(key)
 
-        if not self.store.get(bidder):
-            raise Exception('Requested to get entry but bidder is not present!', bidder, seal)
-        if not self.store[bidder].get(seal):
-            raise Exception('Requested to get entry but seal is not present!', bidder, seal)
+        (bidder, seal) = key
 
         return self.store[bidder][seal]
 
@@ -72,14 +87,11 @@ class BidStore(object):
         return
 
     def unset(self, key: tuple):
-        '''Deletes a Bidinfo from the store.'''
+        '''Removes a Bidinfo from the store.'''
 
         (bidder, seal) = key
 
-        if not self.store.get(bidder):
-            raise Exception('Requested to remove entry but bidder is not present!', bidder, seal)
-        if not self.store[bidder].get(seal):
-            raise Exception('Requested to remove entry but seal is not present!', bidder, seal)
+        self._raise_if_not_in_store(key)
 
         # clear bid info...
         del self.store[bidder][seal]
@@ -144,32 +156,41 @@ class BidStore(object):
         Since BidRevealed and BidCancelled are not differentiated in the temporary
         registrar, looking up the key for both has to be attempted here.'''
 
-        key = None
         bid = None
+        errors = []
+
+        # "BidRevealed" by original bidder
         try:
-            try:
-                key = self._key_from_reveal_event(event)
-                bid = self.get(key) # may throw Exception
-                action = 'revld'
-            except Exception:
-                # might be "external cancellation", try that...
-                key = self._key_from_cancel_event(event)
-                bid = self.get(key) # may throw Exception
-                action = 'cancd'
-            finally:
-                # get immutable copies (str)
-                bidder = bid.bidder
-                seal = bid.seal
-                # clear bid object
-                self.unset(key)
-        except UnboundLocalError as ex:
-            print('FIXME Can not locate bid to remove!')
-            print('FIXME key:   ', key)
-            print('FIXME bidder:', bidder)
-            print('FIXME seal:  ', seal)
-            print('FIXME event:\n', event)
-        else:
+            key = self._key_from_reveal_event(event)
+            bid = self.get(key) # may raise
+            action = 'revld'
+        except LookupError as e:
+            # might be "external cancellation", will try that...
+            errors.append(e)
+
+        # "BidCancelled" by someone else
+        try:
+            key = self._key_from_cancel_event(event)
+            bid = self.get(key) # may raise
+            action = 'cancd'
+        except LookupError as e:
+            errors.append(e)
+
+        if bid:
+            # get immutable copies (str)
+            bidder = bid.bidder
+            seal = bid.seal
+            # clear bid object
+            self.unset(key)
             # DEBUG
             _print_handled(bidder, seal, action, event['blockNumber'], self._size)
+        else if errors:
+            for e in errors:
+                print(e)
+            raise Exception # DEBUG
+        else:
+            print('Neither bid found in store, nor errors detected!')
+            pprint.pprint(event)
+            raise Exception # DEBUG
 
         return

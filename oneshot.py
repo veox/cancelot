@@ -37,7 +37,7 @@ def main():
     while blocknum <= startblock:
         filt = web3.eth.filter({
             'fromBlock': blocknum,
-            'toBlock': blocknum + blockbatchsize - 1, # does 'toBlock' _include_ that block?..
+            'toBlock': blocknum + blockbatchsize - 1, # magicnum -1: prevent overlap
             'address': cancelot.utils.REGISTRAR #,'topics': list(cancelot.handlers.keys())
         })
         events = filt.get(only_changes = False)
