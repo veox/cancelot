@@ -9,10 +9,10 @@ from web3 import Web3, IPCProvider
 
 import cancelot
 
-# DEBUG
+# DEBUG - numbers OK for blockbatchsize == 1000
 pickleatblocknums = [
-    3664565, # a little before first reveal event
-    3666565  # ~ 800 blocks before first cancellation
+    3664564, # a little before first reveal event
+    3666564  # ~ 800 blocks before first cancellation
 
 ]
 
@@ -20,24 +20,32 @@ pickleatblocknums = [
 web3 = Web3(IPCProvider())
 bids = cancelot.BidStore(web3)
 
+def numrange(fromnum, size):
+    # magicnum -1: don't include range end
+    return (fromnum, fromnum + size - 1)
+
 def main():
     # log/state filenames and loop limiting
     starttime = cancelot.utils.now()
-    startblock = web3.eth.blockNumber
+    startblocknum = web3.eth.blockNumber
 
     # for processing historic blocks in batches
-    blocknum = cancelot.utils.ENSLAUNCHBLOCK
-    blockbatchsize = 100
+    batchsize = 100
+    nbatches = 0
 
-    # override the latter two if pickle specified
+    # default from-block
+    blocknum = cancelot.utils.ENSLAUNCHBLOCK
+    # override if pickle specified
     if len(sys.argv) == 2:
         (bidstore, blocknum) = cancelot.utils.load_pickled_bids(sys.argv[1])
         bids.store = bidstore
+    # calc to-block based on that
+    (_, toblocknum) = numrange(blocknum, batchsize)
 
-    while blocknum <= startblock:
+    while toblocknum <= startblocknum:
         filt = web3.eth.filter({
             'fromBlock': blocknum,
-            'toBlock': blocknum + blockbatchsize - 1, # magicnum -1: prevent overlap
+            'toBlock': toblocknum,
             'address': cancelot.utils.REGISTRAR #,'topics': list(cancelot.handlers.keys())
         })
         events = filt.get(only_changes = False)
@@ -46,13 +54,16 @@ def main():
         bids.handle_events(events)
 
         # DEBUG save progress
-        if blocknum in pickleatblocknums:
-            cancelot.utils.pickle_bids(bids.store, starttime, blocknum)
+        nbatches += 1
+        if nbatches % batchsize == 0 or toblocknum in pickleatblocknums:
+            cancelot.utils.pickle_bids(bids.store, starttime, toblocknum)
 
-        blocknum += blockbatchsize
+        (blocknum, toblocknum) = numrange(toblocknum+1, batchsize)
 
     # having finished, save unconditionally
-    cancelot.utils.pickle_bids(bids.store, starttime, blocknum)
+    cancelot.utils.pickle_bids(bids.store, starttime, toblocknum)
+
+    print('Finished! Processed', nbatches * batchsize, 'blocks.')
 
     return # main()
 

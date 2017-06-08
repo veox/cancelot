@@ -102,7 +102,7 @@ class BidStore(object):
 
         return
 
-    # TODO: rework indexing for same-pair bidder+seal bids
+    # TODO: rework indexing for same-pair bidder+seal bids?
     def _key_from_bidinfo(self, bid: BidInfo):
         return (bid.bidder, bid.seal)
 
@@ -113,19 +113,20 @@ class BidStore(object):
 
         # salt is not logged, so must be reconstructed from transaction
         tx = self.web3.eth.getTransaction(event['transactionHash'])
-        # get salt from transaction data - it's not logged :/
         salt = '0x' + tx['input'][-64:] # 32 bytes from the end
+
         # get value from here, too - logged one might be changed due to `value = min(_value, bid.value())`
         OFFSET = 2+8+64 # 2 for '0x', 8 for function signature, 64 for bytes(32).hex() hash
         value = '0x' + tx['input'][OFFSET:OFFSET+64]
-        # get other from logged event (FIXME: get from tx, too?.. what the hell...)
+
+        # get other from logged event (TODO: get from tx, too?.. what the hell...)
         thishash = event['topics'][1]
+
         # calculate seal (used as part of index)
         seal = self.web3.sha3('0x' + thishash[2:] + bidder[2:] + value[2:] + salt[2:])
 
         return (bidder, seal)
 
-    # FIXME: less rigid indexing
     def _key_from_cancel_event(self, event: dict):
         '''Reconstructs our lookup index from logged cancellation event.'''
 
