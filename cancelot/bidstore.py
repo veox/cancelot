@@ -184,8 +184,11 @@ class BidStore(object):
             # DEBUG
             _print_handled(bidder, seal, action, event['blockNumber'], self._size)
         else:
-            print('WARNING! Key not found in store, skipping bid removal! Tried:')
+            print('WARNING! Key not found in store, skipping bid removal!')
+            print('Tried:')
             for e in errors:
                 print(e)
+            print('Event:')
+            pprint.pprint(event)
 
         return
