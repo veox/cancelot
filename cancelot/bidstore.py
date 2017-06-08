@@ -176,6 +176,10 @@ class BidStore(object):
         except LookupError as e:
             errors.append(e)
 
+        if errors:
+            for e in errors:
+                print(e)
+
         if bid:
             # get immutable copies (str)
             bidder = bid.bidder
@@ -184,13 +188,8 @@ class BidStore(object):
             self.unset(key)
             # DEBUG
             _print_handled(bidder, seal, action, event['blockNumber'], self._size)
-        elif errors:
-            for e in errors:
-                print(e)
-            raise Exception # DEBUG
         else:
-            print('Neither bid found in store, nor errors detected!')
-            pprint.pprint(event)
-            raise Exception # DEBUG
+            print('WARNING! Key not found in store, skipping bid removal!')
+            raise Exception
 
         return
