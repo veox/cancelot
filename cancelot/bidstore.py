@@ -161,8 +161,7 @@ class BidStore(object):
 
         # "BidRevealed" by original bidder
         try:
-            key = self._key_from_reveal_event(event)
-            bid = self.get(key) # may raise
+            bid = self.get(self._key_from_reveal_event(event)) # may raise
             action = 'revld'
         except LookupError as e:
             # might be "external cancellation", will try that...
@@ -170,8 +169,7 @@ class BidStore(object):
 
         # "BidCancelled" by someone else
         try:
-            key = self._key_from_cancel_event(event)
-            bid = self.get(key) # may raise
+            bid = self.get(self._key_from_cancel_event(event)) # may raise
             action = 'cancd'
         except LookupError as e:
             errors.append(e)
@@ -185,11 +183,12 @@ class BidStore(object):
             bidder = bid.bidder
             seal = bid.seal
             # clear bid object
+            key = (bidder, seal)
             self.unset(key)
             # DEBUG
             _print_handled(bidder, seal, action, event['blockNumber'], self._size)
         else:
             print('WARNING! Key not found in store, skipping bid removal!')
-            raise Exception
+            raise Exception # DEBUG: leave this here until it happens at least once
 
         return
