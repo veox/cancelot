@@ -16,15 +16,15 @@ pickleatblocknums = [
 
 ]
 
-def main():
-    web3 = Web3(IPCProvider())
+# DEBUG: global for dropping to REPL on failure
+web3 = Web3(IPCProvider())
+bids = cancelot.BidStore(web3)
 
+def main():
     # log/state filenames and loop limiting
     starttime = cancelot.utils.now()
     startblock = web3.eth.blockNumber
 
-    # 'msg.sender' + 'sealedBid -> BidInfo
-    bids = cancelot.BidStore(web3)
     # for processing historic blocks in batches
     blocknum = cancelot.utils.ENSLAUNCHBLOCK
     blockbatchsize = 100
