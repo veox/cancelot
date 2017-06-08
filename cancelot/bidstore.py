@@ -184,7 +184,7 @@ class BidStore(object):
             self.unset(key)
             # DEBUG
             _print_handled(bidder, seal, action, event['blockNumber'], self._size)
-        else if errors:
+        elif errors:
             for e in errors:
                 print(e)
             raise Exception # DEBUG
