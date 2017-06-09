@@ -67,18 +67,18 @@ def _closest_down(num, sortedlist):
 
     return closest
 
-def gasprice_range(bid):
+def gasprice_range(bidinfo):
     '''Calculates minimum (recommended) and maximum (absolute) gas price for a given bid.'''
     # magicnums: gas used, determined experimentally
     mingas = 28177 # too late, see tx 0x2a8411294620fb0b5c5bbf710e7aeddbfb48c778c4a8d56e90a7cb51851016d6
     maxgas = 49964 # success,  see tx 0xc9f15d91218b3038946c6839495a8cb63eb4d56e98d25acd913cec3ce4921744
     reward = 0.005 # 0.5%
 
-    bid.update(web3)
-    if bid.deedaddr == NULLADDR:
+    bidinfo.update(web3)
+    if bidinfo.deedaddr == NULLADDR:
         raise Exception('Deed cancelled!')
 
-    maximum = int(bid.deedsize * reward / maxgas)
+    maximum = int(bidinfo.deedsize * reward / maxgas)
 
     shannons = _closest_down(web3.fromWei(maximum, 'shannon'), gaspricesinshannon)
     recommended = web3.toWei(shannons, 'shannon')
