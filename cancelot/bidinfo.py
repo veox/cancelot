@@ -40,7 +40,9 @@ class BidInfo(object):
             web3.fromWei(self.deedsize * decimal.Decimal('0.005'), unit), 2)) + ' (' + unit + ') '
         ret += 'expires = ' + str(self.timeexpires) + ' (' + ctime(self.timeexpires) + ') '
 
-        return ret
+        print(ret)
+
+        return
 
     def update(self, web3):
         # look up sealedBids[msg.sender][seal] and its balance
