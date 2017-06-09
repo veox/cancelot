@@ -127,7 +127,7 @@ class BidStore(object):
                 # to save on IPC queries, only update if can cancel in specified period
                 if timediff >= 0:
                     key = (bidder, seal)
-                    bidstore.update(key)
+                    self.update(key)
 
                     if bidinfo.deedaddr != utils.NULLADDR:
                         ret.append(copy.copy(bidinfo))
