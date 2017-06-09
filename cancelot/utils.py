@@ -32,7 +32,7 @@ def load_pickled_bids(filename):
     print('<<<<< Set blocknum to:', blocknum)
     with open(filename, 'rb') as fd:
         bids = pickle.load(fd)
-        print('<<<<< Loaded', len(bids), 'bids')
+        print('<<<<< Loaded bids')
 
     return (bids, blocknum)
 
