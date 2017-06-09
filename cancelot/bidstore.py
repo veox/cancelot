@@ -107,31 +107,32 @@ class BidStore(object):
     def update(self, key: tuple):
         '''Updates a single BidInfo to current chain state.'''
 
-        self.get(key).update(self.web3)
+        bi = self.get(key)
+        bi.update(self.web3)
 
         return
 
     def cancan(self, bythistime = None):
-    '''Returns a list of bids that can be cancelled, all the while populating their deed info.'''
+        '''Returns a list of bids that can be cancelled, all the while populating their deed info.'''
 
-    ret = []
+        ret = []
 
-    if bythistime == None:
-        bythistime = utils.now()
+        if bythistime == None:
+            bythistime = utils.now()
 
-    for bidder, seals in self.store.items():
-        for seal, bidinfo in seals.items():
-            timediff = bythistime - bidinfo.timeexpires
+        for bidder, seals in self.store.items():
+            for seal, bidinfo in seals.items():
+                timediff = bythistime - bidinfo.timeexpires
 
-            # to save on IPC queries, only update if can cancel in specified period
-            if timediff >= 0:
-                key = (bidder, seal)
-                bidstore.update(key)
+                # to save on IPC queries, only update if can cancel in specified period
+                if timediff >= 0:
+                    key = (bidder, seal)
+                    bidstore.update(key)
 
-                if bidinfo.deedaddr != utils.NULLADDR:
-                    ret.append(copy.copy(bidinfo))
+                    if bidinfo.deedaddr != utils.NULLADDR:
+                        ret.append(copy.copy(bidinfo))
 
-    return ret
+        return ret
 
     # TODO: rework indexing for same-pair bidder+seal bids?
     def _key_from_bidinfo(self, bid: BidInfo):
