@@ -27,18 +27,22 @@ def cancel_bid(bid, from_, to_ = cancelot.utils.CANCELOTADDR, gas = 150000, gasp
 
     return txhash
 
-def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
+def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 0):
     '''FIXME: not actually "one-up", since infinitely recursive'''
 
+    time.sleep(sleeptime)
+
     tx = web3.eth.getTransaction(txhash)
+
+    # short-circuit if tx no longer pending
     if not tx:
-        # tx no longer pending - resend no more
         return txhash
 
     if gasprice == None:
-        gasprice = int(tx['gasPrice'] * 1.11)
+        gasprice = int(tx['gasPrice'] * 1.101) # magicnum: 10.1% (slightly above geth default 10%)
         print('WARNING: gasprice not specified; increased by 11% to', gasprice)
 
+    # replace transaction once
     txhash = web3.eth.sendTransaction({
         'nonce': tx['nonce'],
         'from': tx['from'],
@@ -47,16 +51,14 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
         'gasPrice': gasprice,
         'data': tx['input']
     })
+    print('DEBUG: submitted', txhash, 'with gas price increased to', gasprice)
 
     # Keep increasing the gas price, without ever quite reaching the maximum.
     # FIXME: recursive; rewrite as generator?..
-    if maxgasprice != None and gasprice < maxgasprice:
-        time.sleep(sleeptime)
-
-        gasprice = int(gasprice * 1.11)
-        print('DEBUG: increasing gas price to', gasprice)
-
-        txhash = one_up(txhash, gasprice = gasprice, maxgasprice = maxgasprice)
+    nextgasprice = int(gasprice * 1.101) # magicnum: 10.1% (slightly above geth default 10%)
+    if maxgasprice != None and nextgasprice < maxgasprice:
+        # magicnum 16: about one block
+        txhash = one_up(txhash, gasprice = nextgasprice, maxgasprice = maxgasprice, sleeptime = 16)
 
     return txhash
 
@@ -91,7 +93,6 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
         maxgp = min(maxgp, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
 
         if maxgp > gpsafe:
-            time.sleep(5)
             try:
                 txhash = one_up(txhash, maxgasprice = maxgp, sleeptime = 5)
             except Exception as e:
