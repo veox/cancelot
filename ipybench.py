@@ -161,13 +161,20 @@ bids = cancelot.BidStore(web3)
 bids.store = bidstore
 
 now = cancelot.utils.now()
-until = now + 4*60*60
+until = now + 24*60*60
 
 cc = bids.cancan(until)
 
-ccc = []
-for bid in sorted(cc, key=lambda x: x.timeexpires):
-    atstake = bid.deedsize * 0.005
-    if bid.timeexpires < until and atstake >= web3.toWei(0.05, 'finney') and atstake < web3.toWei(1, 'finney'):
-        #bid.display(web3)
-        ccc.append(copy.copy(bid))
+def watch_these(bidlist, minfinney = 0.05, maxfinney = 1000000000):
+    '''TODO'''
+
+    ret = []
+
+    for bid in sorted(bidlist, key=lambda x: x.timeexpires):
+        atstake = bid.deedsize * 0.005
+        if atstake >= web3.toWei(minfinney, 'finney') and atstake < web3.toWei(maxfinney, 'finney'):
+            ret.append(copy.copy(bid))
+
+    return ret
+
+ccc = watch_these(cc)
