@@ -28,6 +28,7 @@ def cancel_bid(bid, from_, to_ = cancelot.utils.CANCELOTADDR, gas = 150000, gasp
     return txhash
 
 def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
+    '''FIXME: not actually "one-up", since infinitely recursive'''
     tx = web3.eth.getTransaction(txhash)
 
     if gasprice == None:
@@ -44,7 +45,7 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
     })
 
     # Keep increasing the gas price, without ever quite reaching the maximum.
-    # FIXME: rewrite with generator
+    # FIXME: recursive; rewrite as generator?..
     if maxgasprice != None and gasprice < maxgasprice:
         time.sleep(sleeptime)
 
@@ -109,6 +110,8 @@ def process_bidlist2(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
             print('Sleeping for', diff, 'seconds...')
             time.sleep(diff)
 
+        # DEBUG
+        print('Placing initial tx with gasprice', gpsafe)
         txhash = cancel_bid(bid, fromaddr, cancelot.utils.CANCELOTADDR, gasprice = gpsafe)
 
         try:
