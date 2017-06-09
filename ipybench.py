@@ -16,3 +16,12 @@ bids = cancelot.BidStore(web3)
 bids.store = bidstore
 
 now = cancelot.utils.now()
+
+cc = bids.cancan(now + 24*60*60)
+
+ccc = []
+for bid in sorted(cc, key=lambda x: x.timeexpires):
+    atstake = bid.deedsize * 0.005
+    if bid.timeexpires < now + 24*60*60 and atstake >= web3.toWei(1, 'finney'): #and atstake < web3.toWei(1, 'finney'):
+        #bid.display(web3)
+        ccc.append(copy.copy(bid))
