@@ -13,6 +13,8 @@ import decimal
 from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider()) # TODO: don't use module-level global
 
+from .bidstore import BidStore
+
 NULLADDR = '0x0000000000000000000000000000000000000000'
 REGISTRAR = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 ENSLAUNCHBLOCK = 3648565
@@ -57,7 +59,7 @@ def load_pickled_bids(filename):
 
 def pickle_bids(bids, starttime = None, blocknum = 0):
     if starttime == None:
-        starttime = int(time.time())
+        starttime = now()
 
     # 1495630192-3759000.pickle
     filename = str(starttime) + '-' + str(blocknum) + '.pickle'
@@ -70,22 +72,24 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
 
     return
 
-def cancan(bids, bythistime = None):
+def cancan(bidstore: BidStore, bythistime = None):
     '''Returns a list of bids that can be cancelled, all the while populating their deed info. '''
     ret = []
 
     if bythistime == None:
-        bythistime = int(time.time())
+        bythistime = now()
 
-    for key, bidinfo in bids.items():
-        timediff = int(bythistime) - int(bidinfo.timeexpires)
+    for bidder, seals in bidstore.store.items():
+        for seal, bidinfo in seals.items():
+            timediff = bythistime - bidinfo.timeexpires
 
-        if timediff >= 0:
-            # update deed address and balance
-            bidinfo.update_deed_info(web3)
+            # to save on IPC queries, only update if can cancel in specified period
+            if timediff >= 0:
+                key = (bidder, seal)
+                bidstore.update(key)
 
-            if bidinfo.deedaddr != NULLADDR:
-                ret.append(bidinfo)
+                if bidinfo.deedaddr != NULLADDR:
+                    ret.append(bidinfo)
 
     return ret
 
