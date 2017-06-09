@@ -25,7 +25,7 @@ class BidInfo(object):
         '''Human-friendly print, multi-line.'''
 
         # make sure printed info is as up-to-date as possible
-        self.update_deed_info(web3)
+        self.update(web3)
 
         ret = ''
 
@@ -42,7 +42,7 @@ class BidInfo(object):
 
         return ret
 
-    def update_deed_info(self, web3):
+    def update(self, web3):
         # look up sealedBids[msg.sender][seal] and its balance
         retval = web3.eth.call({
             'to': utils.REGISTRAR,

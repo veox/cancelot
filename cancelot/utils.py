@@ -74,7 +74,7 @@ def gasprice_range(bid):
     maxgas = 49964 # success,  see tx 0xc9f15d91218b3038946c6839495a8cb63eb4d56e98d25acd913cec3ce4921744
     reward = 0.005 # 0.5%
 
-    bid.update_deed_info(web3)
+    bid.update(web3)
     if bid.deedaddr == NULLADDR:
         raise Exception('Deed cancelled!')
 

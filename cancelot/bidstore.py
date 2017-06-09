@@ -107,7 +107,7 @@ class BidStore(object):
     def update(self, key: tuple):
         '''Updates a single BidInfo to current chain state.'''
 
-        self.get(key).update_deed_info(self.web3)
+        self.get(key).update(self.web3)
 
         return
 
