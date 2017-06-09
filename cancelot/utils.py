@@ -26,25 +26,6 @@ def now():
     '''Shorthand.'''
     return int(time.time())
 
-def check_tx_receipt(receipt, bids):
-    logs = receipt['logs']
-
-    # iterate through events, looking for known fingerprints
-    for event in logs:
-        check_event_log(event, bids)
-
-    return
-
-def check_tx(tx, bids):
-    receipt = web3.eth.getTransactionReceipt(tx['hash'])
-
-    # short-circuit if no event logs (probably OOGed)
-    if len(receipt['logs']) == 0: return
-
-    check_tx_receipt(receipt, bids)
-
-    return
-
 def load_pickled_bids(filename):
     filename = os.path.realpath(filename)
     print('<<<<< Using pickle', filename)
