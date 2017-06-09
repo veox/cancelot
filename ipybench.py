@@ -29,7 +29,11 @@ def cancel_bid(bid, from_, to_ = cancelot.utils.CANCELOTADDR, gas = 150000, gasp
 
 def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
     '''FIXME: not actually "one-up", since infinitely recursive'''
+
     tx = web3.eth.getTransaction(txhash)
+    if not tx:
+        # tx no longer pending - resend no more
+        return txhash
 
     if gasprice == None:
         gasprice = int(tx['gasPrice'] * 1.11)
@@ -52,47 +56,11 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
         gasprice = int(gasprice * 1.11)
         print('DEBUG: increasing gas price to', gasprice)
 
-        try:
-            txhash = one_up(txhash, gasprice = gasprice, maxgasprice = maxgasprice)
-        except ValueError as e:
-            print(e) # DEBUG print for now
+        txhash = one_up(txhash, gasprice = gasprice, maxgasprice = maxgasprice)
 
     return txhash
 
 # FIXME: generator, async handler
-def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
-    '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
-    if gpsafe == None:
-        gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners
-
-    txhashes = []
-    for bid in bidlist:
-        # skip bids already cancelled
-        try:
-            (gprec, gpmax) = gasprice_range(bid)
-        except:
-            continue
-
-        # FIXME: gas selection - screwed up
-        if gpmax < gpsafe:
-            gasprice = gprec
-        else:
-            gasprice = random.randint(min(gpsafe, gprec), max(gpsafe, gprec))
-
-        # FIXME: UGLY stalling
-        diff = bid.timeexpires - cancelot.utils.now() - timeoffset
-        if diff > 0:
-            # DEBUG
-            print('Sleeping for', diff, 'seconds...')
-            time.sleep(diff)
-
-        txhash = cancel_bid(bid, fromaddr, gasprice = gasprice)
-        txhashes.append(txhash)
-        # DEBUG
-        print('Submitted', txhash, 'with gas price', web3.fromWei(gasprice, 'shannon'), '(shannon)')
-
-    return txhashes
-
 def process_bidlist2(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
     if gpsafe == None:
