@@ -61,7 +61,7 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 5):
     return txhash
 
 # FIXME: generator, async handler
-def process_bidlist2(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
+def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
     if gpsafe == None:
         gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners
