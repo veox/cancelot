@@ -79,7 +79,7 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
             gasprice = random.randint(min(gpsafe, gprec), max(gpsafe, gprec))
 
         # FIXME: UGLY stalling
-        diff = bid.timeexpires - now() - timeoffset
+        diff = bid.timeexpires - cancelot.utils.now() - timeoffset
         if diff > 0:
             # DEBUG
             print('Sleeping for', diff, 'seconds...')
@@ -89,6 +89,45 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
         txhashes.append(txhash)
         # DEBUG
         print('Submitted', txhash, 'with gas price', web3.fromWei(gasprice, 'shannon'), '(shannon)')
+
+    return txhashes
+
+def process_bidlist2(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
+    '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
+    if gpsafe == None:
+        gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners
+
+    txhashes = []
+
+    for bid in bidlist:
+        bid.display(web3)
+
+        # FIXME: UGLY stalling
+        diff = bid.timeexpires - cancelot.utils.now() - timeoffset
+        if diff > 0:
+            # DEBUG
+            print('Sleeping for', diff, 'seconds...')
+            time.sleep(diff)
+
+        txhash = cancel_bid(bid, fromaddr, cancelot.utils.CANCELOTADDR, gasprice = gpsafe)
+
+        try:
+            maxgp = cancelot.utils.gasprice_range(bid)[1]
+        except Exception as e:
+            print(e)
+            continue
+        # safeguard from giving all to miners
+        maxgp = min(maxgp, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
+
+        if maxgp > gpsafe:
+            time.sleep(5)
+            txhash = one_up(txhash, maxgasprice = maxgp, sleeptime = 5)
+
+        txhashes.append(txhash)
+        # DEBUG
+        tx = web3.eth.getTransaction(txhash)
+        finalgp = tx['gasPrice']
+        print('Final tx ', txhash, 'with gas price', web3.fromWei(finalgp, 'shannon'), '(shannon)')
 
     return txhashes
 
@@ -116,12 +155,13 @@ bids = cancelot.BidStore(web3)
 bids.store = bidstore
 
 now = cancelot.utils.now()
+until = now + 4*60*60
 
-cc = bids.cancan(now + 1*60*60)
+cc = bids.cancan(until)
 
 ccc = []
 for bid in sorted(cc, key=lambda x: x.timeexpires):
     atstake = bid.deedsize * 0.005
-    if bid.timeexpires < now + 1*60*60 and atstake >= web3.toWei(0.05, 'finney') and atstake < web3.toWei(0.5, 'finney'):
+    if bid.timeexpires < until and atstake >= web3.toWei(0.05, 'finney') and atstake < web3.toWei(1, 'finney'):
         #bid.display(web3)
         ccc.append(copy.copy(bid))
