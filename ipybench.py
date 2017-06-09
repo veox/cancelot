@@ -121,7 +121,10 @@ def process_bidlist2(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
 
         if maxgp > gpsafe:
             time.sleep(5)
-            txhash = one_up(txhash, maxgasprice = maxgp, sleeptime = 5)
+            try:
+                txhash = one_up(txhash, maxgasprice = maxgp, sleeptime = 5)
+            except Exception as e:
+                print(e)
 
         txhashes.append(txhash)
         # DEBUG
