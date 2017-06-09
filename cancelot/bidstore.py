@@ -102,6 +102,13 @@ class BidStore(object):
 
         return
 
+    def update(self, key: tuple):
+        '''Updates a single BidInfo to current chain state.'''
+
+        self.get(key).update_deed_info(self.web3)
+
+        return
+
     # TODO: rework indexing for same-pair bidder+seal bids?
     def _key_from_bidinfo(self, bid: BidInfo):
         return (bid.bidder, bid.seal)
