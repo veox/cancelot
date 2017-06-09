@@ -12,7 +12,7 @@ from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider())
 
 # TODO: turn into Bid{,Info} class function?..
-def cancel_bid(bid, from_, to_ = utils.CANCELOTADDR, gas = 150000, gasprice = None):
+def cancel_bid(bid, from_, to_ = cancelot.utils.CANCELOTADDR, gas = 150000, gasprice = None):
     if gasprice == None:
         gasprice = web3.toWei(20, 'shannon')
         print('WARNING: gasprice not specified; forced to', gasprice)
