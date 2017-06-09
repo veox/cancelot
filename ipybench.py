@@ -133,7 +133,10 @@ def process_bidlist2(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
 
 def clear_tx(txhash, gasprice = None):
     '''Resend transaction with high gas price, low gas and no data.'''
+
     tx = web3.eth.getTransaction(txhash)
+    if not tx:
+        return
 
     if gasprice == None:
         gasprice = web3.toWei(20, 'shannon')
