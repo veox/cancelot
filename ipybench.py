@@ -92,6 +92,25 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
 
     return txhashes
 
+def clear_tx(txhash, gasprice = None):
+    '''Resend transaction with high gas price, low gas and no data.'''
+    tx = web3.eth.getTransaction(txhash)
+
+    if gasprice == None:
+        gasprice = web3.toWei(20, 'shannon')
+        print('WARNING: gasprice not specified; set to', gasprice)
+
+    txhash = web3.eth.sendTransaction({
+        'nonce': tx['nonce'],
+        'from': tx['from'],
+        'to': tx['to'],
+        'gas': 21000,
+        'gasPrice': gasprice,
+        'data': '0x'
+    })
+
+    return txhash
+
 bids = cancelot.BidStore(web3)
 (bidstore, blocknum) = cancelot.utils.load_pickled_bids('pickles/latest.pickle')
 bids.store = bidstore
