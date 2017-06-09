@@ -1,6 +1,8 @@
-import pprint # in exception handling
+import copy
+import pprint # used in exception handling
 
 from .bidinfo import BidInfo
+from . import utils
 
 def _print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
@@ -108,6 +110,28 @@ class BidStore(object):
         self.get(key).update_deed_info(self.web3)
 
         return
+
+    def cancan(self, bythistime = None):
+    '''Returns a list of bids that can be cancelled, all the while populating their deed info.'''
+
+    ret = []
+
+    if bythistime == None:
+        bythistime = utils.now()
+
+    for bidder, seals in self.store.items():
+        for seal, bidinfo in seals.items():
+            timediff = bythistime - bidinfo.timeexpires
+
+            # to save on IPC queries, only update if can cancel in specified period
+            if timediff >= 0:
+                key = (bidder, seal)
+                bidstore.update(key)
+
+                if bidinfo.deedaddr != utils.NULLADDR:
+                    ret.append(copy.copy(bidinfo))
+
+    return ret
 
     # TODO: rework indexing for same-pair bidder+seal bids?
     def _key_from_bidinfo(self, bid: BidInfo):

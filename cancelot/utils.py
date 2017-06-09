@@ -13,8 +13,6 @@ import decimal
 from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider()) # TODO: don't use module-level global
 
-from .bidstore import BidStore
-
 NULLADDR = '0x0000000000000000000000000000000000000000'
 REGISTRAR = '0x6090a6e47849629b7245dfa1ca21d94cd15878ef'
 ENSLAUNCHBLOCK = 3648565
@@ -52,27 +50,6 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
     print('>>>>> Done!')
 
     return
-
-def cancan(bidstore: BidStore, bythistime = None):
-    '''Returns a list of bids that can be cancelled, all the while populating their deed info. '''
-    ret = []
-
-    if bythistime == None:
-        bythistime = now()
-
-    for bidder, seals in bidstore.store.items():
-        for seal, bidinfo in seals.items():
-            timediff = bythistime - bidinfo.timeexpires
-
-            # to save on IPC queries, only update if can cancel in specified period
-            if timediff >= 0:
-                key = (bidder, seal)
-                bidstore.update(key)
-
-                if bidinfo.deedaddr != NULLADDR:
-                    ret.append(bidinfo)
-
-    return ret
 
 # TODO: get from http://ethgasstation.info/hashPowerTable.php
 gaspricesinshannon = sorted([1, 4, 16, 18, 20, 27, 40]) # 2017-06-05
