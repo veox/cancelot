@@ -101,8 +101,11 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
         txhashes.append(txhash)
         # DEBUG
         tx = web3.eth.getTransaction(txhash)
-        finalgp = tx['gasPrice']
-        print('Final tx ', txhash, 'with gas price', web3.fromWei(finalgp, 'shannon'), '(shannon)')
+        if not tx:
+            print('WARNING! Something went wrong again, could not retrieve tx!')
+        else:
+            finalgp = tx['gasPrice']
+            print('Final tx ', txhash, 'with gas price', web3.fromWei(finalgp, 'shannon'), '(shannon)')
 
     return txhashes
 
