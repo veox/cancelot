@@ -74,7 +74,7 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0):
         bid.display(web3)
 
         # FIXME: UGLY stalling
-        diff = bid.timeexpires - cancelot.utils.now() - timeoffset
+        diff = bid.timeexpires - cancelot.utils.now() + timeoffset
         if diff > 0:
             # DEBUG
             print('Sleeping for', diff, 'seconds...')
