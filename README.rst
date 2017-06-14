@@ -7,6 +7,10 @@ were never revealed.
 The code is released as-is, without warranty of any kind, including
 fitness for a purpose.
 
+Do not read past this line.
+
+You have been warned!..
+
 
 Overview
 --------
@@ -44,8 +48,10 @@ Prerequisites
    pip install ipython
 
 
-Notes
+Usage
 -----
+
+Awkward.
 
 The code has been used for a few weeks until its first release with
 CPython 3.5. There are no tests.
@@ -55,12 +61,39 @@ that are down-right horrible are marked with ``FIXME``.
 
 Many functions have side-effects, such as debug messages or warnings.
 
+First run
+^^^^^^^^^
+
+``cancelot`` in general is provided as a Python package, with a few
+example scripts that use it.
+
+To construct a state for the first time, run:
+
+.. codeblock: sh
+
+   python -u oneshot.py 2>&1 | tee -i -a logs/`date +%s`.log
+
+The result will be a lot of pickle files. Most are saved as "backups"
+while the script is running. Save the newest one in the ``pickles``
+directory, and remove the rest.
+
+For subsequent runs, use:
+
+.. codeblock: sh
+
+   ./run-oneshot.sh
+
+This will reuse the previous pickle.
+
+Examples
+^^^^^^^^
+
 Several "bidding strategy" helpers made it into the repository. There is
 little sense in removing them now, since they're not complex anyway, and
 it would require some major rewriting of git history, most likely complete
 flattening, which I find unacceptable.
 
-They are currently available in ``ipybench.py``. The file is to be run as:
+Anyway, they are available in ``ipybench.py``. The file is to be run as:
 
 .. codeblock: sh
 
@@ -71,10 +104,12 @@ bot are not provided.
 
 This is to guarantee that at least some programming must be done by an
 operator wishing to use this, therefore absolving me personally from
-being morally responsible for any consequences.
+being morally responsible for the horrible misfortune they're inevitably
+bound to run into.
 
 Revealing the code completely would have also put me at a total disadvantage,
-whereas now it is only severe.
+comparing to competing closed-source implementations, whereas now the
+handicap is merely severe.
 
 
 License
@@ -96,13 +131,16 @@ https://etherscan.io/tx/0x6e032eed213f1a641af8cdb7fd3770984010a38c04f6c06e393b03
 First reveal?..
 ^^^^^^^^^^^^^^^
 
-Bid from 0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7 with seal 0x844e77749af1a22536ebbe7fed28588cc4e82302096105f0309db00dd8c79256 added (block 3665634).
-'0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7', '0x00033095b0df8983c66c84b7ff557a5b9b4705a9e22167ae748351d6357ae98b'
+.. codeblock:
+
+   Bid from 0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7 with seal 0x844e77749af1a22536ebbe7fed28588cc4e82302096105f0309db00dd8c79256 added (block 3665634).
+   '0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7', '0x00033095b0df8983c66c84b7ff557a5b9b4705a9e22167ae748351d6357ae98b'
 
 First cancel?..
 ^^^^^^^^^^^^^^^
+.. codeblock:
 
-Bid from 0x3e1f4f4de69e7e2cec0f45153a542d6108ef81bb with seal 0x486e1b9e1e85a60199f98c945ae548c42c51b472b8842181c1d1414a01a4f97c cancd (block 3754090).
+   Bid from 0x3e1f4f4de69e7e2cec0f45153a542d6108ef81bb with seal 0x486e1b9e1e85a60199f98c945ae548c42c51b472b8842181c1d1414a01a4f97c cancd (block 3754090).
 
 Something weird!
 ^^^^^^^^^^^^^^^^
