@@ -11,6 +11,29 @@ import cancelot
 from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider())
 
+# TODO: move to utils?
+def clear_tx(txhash, gasprice = None):
+    '''Resend transaction with high gas price, low gas and no data.'''
+
+    tx = web3.eth.getTransaction(txhash)
+    if not tx:
+        return
+
+    if gasprice == None:
+        gasprice = web3.toWei(20, 'shannon')
+        print('WARNING: gasprice not specified; set to', gasprice)
+
+    txhash = web3.eth.sendTransaction({
+        'nonce': tx['nonce'],
+        'from': tx['from'],
+        'to': tx['to'],
+        'gas': 21000,
+        'gasPrice': gasprice,
+        'data': '0x'
+    })
+
+    return txhash
+
 # TODO: turn into Bid{,Info} class function?..
 def cancel_bid(bid, from_, to_ = cancelot.utils.CANCELOTADDR, gas = 150000, gasprice = None):
     if gasprice == None:
@@ -27,8 +50,9 @@ def cancel_bid(bid, from_, to_ = cancelot.utils.CANCELOTADDR, gas = 150000, gasp
 
     return txhash
 
+# FIXME: not actually "one-up", since blocking and recursive
 def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 0):
-    '''FIXME: not actually "one-up", since infinitely recursive'''
+    '''TODO: desc'''
 
     time.sleep(sleeptime)
 
@@ -62,9 +86,10 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 0):
 
     return txhash
 
-# FIXME: generator, async handler
+# FIXME: do generator, async handler
 def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetosleep = 8):
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
+
     if gpsafe == None:
         gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners
 
@@ -113,39 +138,9 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetoslee
 
     return txhashes
 
-def clear_tx(txhash, gasprice = None):
-    '''Resend transaction with high gas price, low gas and no data.'''
-
-    tx = web3.eth.getTransaction(txhash)
-    if not tx:
-        return
-
-    if gasprice == None:
-        gasprice = web3.toWei(20, 'shannon')
-        print('WARNING: gasprice not specified; set to', gasprice)
-
-    txhash = web3.eth.sendTransaction({
-        'nonce': tx['nonce'],
-        'from': tx['from'],
-        'to': tx['to'],
-        'gas': 21000,
-        'gasPrice': gasprice,
-        'data': '0x'
-    })
-
-    return txhash
-
-bids = cancelot.BidStore(web3)
-(bidstore, blocknum) = cancelot.utils.load_pickled_bids('pickles/latest.pickle')
-bids.store = bidstore
-
-now = cancelot.utils.now()
-until = now + 24*60*60
-
-cc = bids.cancan(until)
-
+# TODO: pass selector function as argument?
 def watch_these(bidlist, minfinney = 0.05, maxfinney = 1000000000):
-    '''TODO'''
+    '''TODO: bidlist'''
 
     ret = []
 
@@ -155,5 +150,14 @@ def watch_these(bidlist, minfinney = 0.05, maxfinney = 1000000000):
             ret.append(copy.copy(bid))
 
     return ret
+
+bids = cancelot.BidStore(web3)
+(bidstore, blocknum) = cancelot.utils.load_pickled_bids('pickles/latest.pickle')
+bids.store = bidstore
+
+now = cancelot.utils.now()
+until = now + 24*60*60
+
+cc = bids.cancan(until)
 
 ccc = watch_these(cc)
