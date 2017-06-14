@@ -52,7 +52,7 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
     return
 
 # TODO: get from http://ethgasstation.info/hashPowerTable.php
-gaspricesinshannon = sorted([1, 4, 18, 20, 21, 22, 24, 25, 27, 40]) # 2017-06-13
+gaspricesinshannon = sorted([1, 4, 18, 20, 27, 40]) # 2017-06-14
 
 def _closest_down(num, sortedlist):
     '''Finds a number closest-down to a given one from a sorted list of numbers.'''
