@@ -24,6 +24,9 @@ def cb_handled(bid, event, eventtype, handler):
     '''Callback to track handled events.'''
 
     if eventtype == cancelot.EventType.PLACED:
+        # work around scroogey BidStore - do actually get deed size
+        bid.update(web3)
+
         nbids['placed'] += 1
         nbids['active'] += 1
         wei['placed'] += bid.deedsize
