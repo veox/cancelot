@@ -5,5 +5,5 @@ throughout the project.
 
 '''
 
-__version__ = '0.0.0'
+__version__ = '0.0.1'
 __url__ = 'https://gitlab.com/veox/cancelot'
