@@ -1,6 +1,8 @@
 import copy
 import pprint # used in exception handling
 
+from enum import Enum
+
 from .bidinfo import BidInfo
 from . import utils
 
@@ -9,10 +11,17 @@ def _print_handled(bidder, seal, action, blocknum, total):
           '(block ' + str(blocknum) + ').', 'Total:', total)
     return
 
-def _cb_stub(bid: BidInfo, event = None, hadler = None):
+class EventType(Enum):
+    # TODO: some same repr()?..
+    UNHANDLED = 0
+    PLACED = 1
+    REVEALED = 2
+    CANCELLED = 3
+
+def _cb_stub(bid: BidInfo, event = None, eventtype = EventType.UNHANDLED, hadler = None):
     '''Event handler callback stub.'''
 
-    pass
+    return
 
 class LookupError(Exception):
     def __init__(self, address, bytes32, message):
@@ -47,21 +56,22 @@ class BidStore(object):
         '''Changes store based on type of event.'''
 
         ret = None
+        eventtype = EventType.UNHANDLED
 
         fp = event['topics'][0]
         handler = self.handlers[fp] if self.handlers.get(fp) else None
 
         if handler:
             # got match - handle as specified
-            ret = handler(event)
+            (ret, eventtype) = handler(event)
             # TODO: async?
             if cb:
-                cb(ret, event = event, handler = handler)
+                cb(ret, event = event, eventtype = eventtype, handler = handler)
         else:
             # unhandled events are currently allowed
             pass
 
-        return ret
+        return (ret, eventtype)
 
     def _raise_if_not_in_store(self, key: tuple):
         (address, bytes32) = key
@@ -181,8 +191,9 @@ class BidStore(object):
         '''Stub.'''
 
         bidinfo = None # or BidInfo object
+        eventtype = None # or EventType enum value
 
-        return bidinfo
+        return (bidinfo, eventtype)
 
     def _add(self, event: dict):
         '''Process NewBid event.'''
@@ -198,7 +209,7 @@ class BidStore(object):
         # DEBUG
         _print_handled(bid.bidder, bid.seal, 'added', bid.blockplaced, self._size)
 
-        return bid
+        return (bid, EventType.PLACED)
 
     def _rem(self, event: dict):
         '''Process BidRevealed event.
@@ -213,6 +224,7 @@ class BidStore(object):
         try:
             bid = self.get(self._key_from_reveal_event(event)) # may raise
             action = 'revld'
+            eventtype = EventType.REVEALED
         except LookupError as e:
             # might be "external cancellation", will try that...
             errors.append(e)
@@ -221,6 +233,7 @@ class BidStore(object):
         try:
             bid = self.get(self._key_from_cancel_event(event)) # may raise
             action = 'cancd'
+            eventtype = EventType.CANCELLED
         except LookupError as e:
             errors.append(e)
 
@@ -235,7 +248,7 @@ class BidStore(object):
             # DEBUG
             _print_handled(bidder, seal, action, event['blockNumber'], self._size)
 
-            return ret
+            return (ret, eventtype)
         else:
             # DEBUG
             print('WARNING! Key not found in store, skipping bid removal!')
@@ -245,4 +258,4 @@ class BidStore(object):
             print('Event:')
             pprint.pprint(event)
 
-            return None
+            return (None, EventType.UNHANDLED)

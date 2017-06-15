@@ -17,9 +17,29 @@ def numrange(fromnum, size):
     # magicnum -1: don't include range end
     return (fromnum, fromnum + size - 1)
 
-def cb_handled():
+nbids = {}
+wei = {}
+
+def cb_handled(bid, event, eventtype, handler):
     '''Callback to track handled events.'''
-    pass
+
+    if eventtype == cancelot.EventType.PLACED:
+        nbids['placed'] += 1
+        nbids['active'] += 1
+        wei['placed'] += bid.deedsize
+        wei['active'] += bid.deedsize
+    elif eventtype == cancelot.EventType.REVEALED:
+        nbids['revealed'] += 1
+        nbids['active'] -= 1
+        wei['revealed'] += bid.deedsize
+        wei['active'] -= bid.deedsize
+    elif eventtype == cancelot.EventType.CANCELLED:
+        nbids['cancelled'] += 1
+        nbids['active'] -= 1
+        wei['cancelled'] += bid.deedsize
+        wei['active'] -= bid.deedsize        
+
+    return
 
 def main():
     # log/state filenames and loop limiting
