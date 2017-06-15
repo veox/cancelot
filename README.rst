@@ -41,7 +41,7 @@ To calculate the success rate, divide EtherScan's shown number of
 Prerequisites
 -------------
 
-.. codeblock: sh
+.. code-block:: sh
 
    export VIRTUAL_ENV=.virtualenv/cancelot
    mkdir -p $VIRTUAL_ENV
@@ -73,7 +73,7 @@ example scripts that use it.
 
 To construct a state for the first time, run:
 
-.. codeblock: sh
+.. code-block:: sh
 
    python -u oneshot.py 2>&1 | tee -i -a logs/`date +%s`.log
 
@@ -83,7 +83,7 @@ directory, and remove the rest.
 
 For subsequent runs, use:
 
-.. codeblock: sh
+.. code-block:: sh
 
    ./run-oneshot.sh
 
@@ -99,7 +99,7 @@ flattening, which I find unacceptable.
 
 Anyway, they are available in ``ipybench.py``. The file is to be run as:
 
-.. codeblock: sh
+.. code-block:: sh
 
    ipython -i ipybench.py
 
@@ -153,14 +153,14 @@ https://etherscan.io/tx/0x6e032eed213f1a641af8cdb7fd3770984010a38c04f6c06e393b03
 First reveal?..
 ^^^^^^^^^^^^^^^
 
-.. codeblock:
+.. code-block::
 
    Bid from 0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7 with seal 0x844e77749af1a22536ebbe7fed28588cc4e82302096105f0309db00dd8c79256 added (block 3665634).
    '0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7', '0x00033095b0df8983c66c84b7ff557a5b9b4705a9e22167ae748351d6357ae98b'
 
 First cancel?..
 ^^^^^^^^^^^^^^^
-.. codeblock:
+.. code-block::
 
    Bid from 0x3e1f4f4de69e7e2cec0f45153a542d6108ef81bb with seal 0x486e1b9e1e85a60199f98c945ae548c42c51b472b8842181c1d1414a01a4f97c cancd (block 3754090).
 
@@ -169,7 +169,7 @@ Something weird!
 
 Possibly a multisig contract doing the bidding?.. Or an index collision?..
 
-.. codeblock:
+.. code-block::
 
    WARNING! Key not found in store, skipping bid removal! Tried:
    ('bytes32 not in store', '0x3e35de8f9a0f71c7891245f50a46be4e863244a4', '0x772f91f480a2292645cedee795ffd0f03793e580ba481c16ad23c7b7d0b7f1d6')
