@@ -57,8 +57,8 @@ Usage
 
 Awkward.
 
-The code has been used for a few weeks until its first release with
-CPython 3.5. There are no tests.
+The code has been used with CPython 3.5 for a few weeks until its first
+release. There are no tests.
 
 Sections that are sub-optimal are marked with ``TODO``. Sections
 that are down-right horrible are marked with ``FIXME``.
