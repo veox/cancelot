@@ -9,6 +9,11 @@ def _print_handled(bidder, seal, action, blocknum, total):
           '(block ' + str(blocknum) + ').', 'Total:', total)
     return
 
+def _callback_stub(bid: BidInfo, event = None, hadler = None):
+    '''Stub.'''
+
+    pass
+
 class LookupError(Exception):
     def __init__(self, address, bytes32, message):
         self.address = address
@@ -30,28 +35,33 @@ class BidStore(object):
 
         return
 
-    def handle_events(self, events: list):
+    def handle_events(self, events: list, callback = _callback_stub):
         '''Wrapper to process a list of events.'''
 
         for ev in events:
-            self.handle_event(ev)
+            self.handle_event(ev, callback = callback)
 
         return
 
-    def handle_event(self, event: dict):
+    def handle_event(self, event: dict, callback = None):
         '''Changes store based on type of event.'''
+
+        ret = None
 
         fp = event['topics'][0]
         handler = self.handlers[fp] if self.handlers.get(fp) else None
 
         if handler:
             # got match - handle as specified
-            handler(event)
+            ret = handler(event)
+            # TODO: async?
+            if callback:
+                callback(ret, event = event, handler = handler)
         else:
             # unhandled events are currently allowed
             pass
 
-        return
+        return ret
 
     def _raise_if_not_in_store(self, key: tuple):
         (address, bytes32) = key
@@ -167,7 +177,14 @@ class BidStore(object):
 
         return (bidder, seal)
 
-    def _add(self, event):
+    def _event_handler_stub(self, event: dict):
+        '''Stub.'''
+
+        bidinfo = None # or BidInfo object
+
+        return bidinfo
+
+    def _add(self, event: dict):
         '''Process NewBid event.'''
 
         bid = BidInfo(event, self.web3)
@@ -181,9 +198,9 @@ class BidStore(object):
         # DEBUG
         _print_handled(bid.bidder, bid.seal, 'added', bid.blockplaced, self._size)
 
-        return
+        return bid
 
-    def _rem(self, event):
+    def _rem(self, event: dict):
         '''Process BidRevealed event.
 
         Since BidRevealed and BidCancelled are not differentiated in the temporary
@@ -208,15 +225,19 @@ class BidStore(object):
             errors.append(e)
 
         if bid:
-            # get immutable copies (str)
-            bidder = bid.bidder
-            seal = bid.seal
+            # get a separate copy
+            ret = copy.copy(bid)
+
             # clear bid object
-            key = (bidder, seal)
+            key = (ret.bidder, ret.seal)
             self.unset(key)
+
             # DEBUG
             _print_handled(bidder, seal, action, event['blockNumber'], self._size)
+
+            return ret
         else:
+            # DEBUG
             print('WARNING! Key not found in store, skipping bid removal!')
             print('Tried:')
             for e in errors:
@@ -224,4 +245,4 @@ class BidStore(object):
             print('Event:')
             pprint.pprint(event)
 
-        return
+            return None
