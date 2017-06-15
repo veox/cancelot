@@ -30,6 +30,9 @@ consideration being low gas price for calls.
 You can `see it at work`_ on a block explorer. While there, take a look
 `at a competitor`_, too.
 
+To calculate the success rate, divide EtherScan's shown number of
+"internal transactions" by the number of "external transactions".
+
 .. _see it at work: https://etherscan.io/address/0xc9c7db3c7a2e3b8aca6e6f78180f7013575392a3
 .. _at a competitor: https://etherscan.io/address/0xd343d2db4306db8cfd917b561fb2b9197e86ff40
 
@@ -110,6 +113,24 @@ bound to run into.
 Revealing the code completely would have also put me at a total disadvantage,
 comparing to competing closed-source implementations, whereas now the
 handicap is merely severe.
+
+Profitability
+^^^^^^^^^^^^^
+
+The provided "strategy" is, at best, break-even. It gives most of the
+profit to the miners. Arguably, this is what the race-to-cancel devolves
+to in the presence of multiple parties trying to do the cancelling.
+
+Somewhat counter-intuitively, gas price is not the main factor - at least,
+not at all times. But it is one that's always present.
+
+Other factors include node latency and level of integration into the network,
+as well as specific miners' algorithms for selecting which transactions
+get included, and in what order.
+
+General health of the network, such as the size of the `txpool`, can also
+be said to play a role, although the effects are included in the factors
+mentioned above. This works more as an indicator.
 
 
 License
