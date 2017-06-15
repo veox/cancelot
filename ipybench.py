@@ -86,7 +86,7 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 0):
 
     return txhash
 
-# FIXME: do generator, async handler
+# FIXME: blocking and defers to one_up() (recursive)
 def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetosleep = 8):
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
 
@@ -96,9 +96,6 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetoslee
     txhashes = []
 
     for bid in bidlist:
-        print('Next bid:')
-        bid.display(web3)
-
         try:
             (gprec, gpmax) = cancelot.utils.gasprice_range(bid)
         except Exception as e:
@@ -106,6 +103,15 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetoslee
             continue
         # magicnum 42: safeguard from giving all to miners
         gpmax = min(gpmax, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
+
+        if gprec * 2 < gpsafe:
+            print('DEBUG gprec/gpsafe:', gprec/gpsafe)
+            print('Skipping bid:')
+            bid.display(web3)
+            continue
+        else:
+            print('Next bid:')
+            bid.display(web3)
 
         # FIXME: UGLY stalling
         diff = bid.timeexpires - cancelot.utils.now() + timeoffset
