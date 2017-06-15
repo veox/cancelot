@@ -3,6 +3,7 @@
 # Author: Noel Maersk
 # License: GPLv3. See LICENSE.txt
 
+import pprint
 import sys
 
 from web3 import Web3, IPCProvider
@@ -84,6 +85,10 @@ def main():
     cancelot.utils.pickle_bids(bids.store, starttime, toblocknum)
 
     print('Finished! Processed', nbatches * batchsize, 'blocks.')
+
+    # TODO: proper out
+    pprint(nbids)
+    pprint(wei)
 
     return # main()
 
