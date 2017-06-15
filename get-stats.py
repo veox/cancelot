@@ -17,8 +17,8 @@ def numrange(fromnum, size):
     # magicnum -1: don't include range end
     return (fromnum, fromnum + size - 1)
 
-nbids = {}
-wei = {}
+nbids = {'placed': 0, 'active': 0, 'revealed': 0, 'cancelled': 0}
+wei =   {'placed': 0, 'active': 0, 'revealed': 0, 'cancelled': 0}
 
 def cb_handled(bid, event, eventtype, handler):
     '''Callback to track handled events.'''
