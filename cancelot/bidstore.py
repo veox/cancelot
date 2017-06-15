@@ -9,8 +9,8 @@ def _print_handled(bidder, seal, action, blocknum, total):
           '(block ' + str(blocknum) + ').', 'Total:', total)
     return
 
-def _callback_stub(bid: BidInfo, event = None, hadler = None):
-    '''Stub.'''
+def _cb_stub(bid: BidInfo, event = None, hadler = None):
+    '''Event handler callback stub.'''
 
     pass
 
@@ -35,15 +35,15 @@ class BidStore(object):
 
         return
 
-    def handle_events(self, events: list, callback = _callback_stub):
+    def handle_events(self, events: list, cb = _cb_stub):
         '''Wrapper to process a list of events.'''
 
         for ev in events:
-            self.handle_event(ev, callback = callback)
+            self.handle_event(ev, cb = cb)
 
         return
 
-    def handle_event(self, event: dict, callback = None):
+    def handle_event(self, event: dict, cb = None):
         '''Changes store based on type of event.'''
 
         ret = None
@@ -55,8 +55,8 @@ class BidStore(object):
             # got match - handle as specified
             ret = handler(event)
             # TODO: async?
-            if callback:
-                callback(ret, event = event, handler = handler)
+            if cb:
+                cb(ret, event = event, handler = handler)
         else:
             # unhandled events are currently allowed
             pass
