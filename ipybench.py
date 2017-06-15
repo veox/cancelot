@@ -91,35 +91,35 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetoslee
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
 
     if gpsafe == None:
-        gpsafe = web3.toWei(20, 'shannon') # >= 94% of miners
+        gpsafe = web3.eth.gasPrice
 
     txhashes = []
 
     for bid in bidlist:
+        print('Next bid:')
         bid.display(web3)
 
         # FIXME: UGLY stalling
         diff = bid.timeexpires - cancelot.utils.now() + timeoffset
         if diff > 0:
-            # DEBUG
-            print('Sleeping for', diff, 'seconds...')
+            print('Sleeping for', diff, 'seconds...') # DEBUG
             time.sleep(diff)
 
-        # DEBUG
-        print('Placing initial tx with gasprice', gpsafe)
+        print('Placing initial tx with gasprice', gpsafe) # DEBUG
         txhash = cancel_bid(bid, fromaddr, cancelot.utils.CANCELOTADDR, gasprice = gpsafe)
 
         try:
-            maxgp = cancelot.utils.gasprice_range(bid)[1]
+            (_, gpmax) = cancelot.utils.gasprice_range(bid)
         except Exception as e:
             print(e)
             continue
         # safeguard from giving all to miners
-        maxgp = min(maxgp, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
+        gpmax = min(gpmax, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
 
-        if maxgp > gpsafe:
+        # increase tx gas price if still within limits
+        if gpsafe < gpmax:
             try:
-                txhash = one_up(txhash, maxgasprice = maxgp, sleeptime = timetosleep)
+                txhash = one_up(txhash, maxgasprice = gpmax, sleeptime = timetosleep)
             except Exception as e:
                 print(e)
 
