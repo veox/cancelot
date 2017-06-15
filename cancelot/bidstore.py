@@ -246,7 +246,7 @@ class BidStore(object):
             self.unset(key)
 
             # DEBUG
-            _print_handled(bidder, seal, action, event['blockNumber'], self._size)
+            _print_handled(ret.bidder, ret.seal, action, event['blockNumber'], self._size)
 
             return (ret, eventtype)
         else:

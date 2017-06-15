@@ -87,8 +87,8 @@ def main():
     print('Finished! Processed', nbatches * batchsize, 'blocks.')
 
     # TODO: proper out
-    pprint(nbids)
-    pprint(wei)
+    pprint.pprint(nbids)
+    pprint.pprint(wei)
 
     return # main()
 
