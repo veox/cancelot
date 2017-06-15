@@ -7,9 +7,10 @@ were never revealed.
 The code is released as-is, without warranty of any kind, including
 fitness for a purpose.
 
-Do not read past this line.
+You're about to see some UGLY, like ``'0x' + event['topics'][2][-40:]``
+instead of ``web3.toChecksumAddress(...)``.
 
-You have been warned!..
+Seriously. This might not be something you wish to delve into.
 
 
 Overview
