@@ -68,7 +68,7 @@ def main():
         events = filt.get(only_changes = False)
         web3.eth.uninstallFilter(filt.filter_id) # TODO: can filter be modified instead?
 
-        bids.handle_events(events, callback = cb_handled)
+        bids.handle_events(events, cb = cb_handled)
 
         # DEBUG save progress
         nbatches += 1
