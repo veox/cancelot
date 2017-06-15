@@ -99,6 +99,14 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetoslee
         print('Next bid:')
         bid.display(web3)
 
+        try:
+            (gprec, gpmax) = cancelot.utils.gasprice_range(bid)
+        except Exception as e:
+            print(e)
+            continue
+        # magicnum 42: safeguard from giving all to miners
+        gpmax = min(gpmax, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
+
         # FIXME: UGLY stalling
         diff = bid.timeexpires - cancelot.utils.now() + timeoffset
         if diff > 0:
@@ -107,14 +115,6 @@ def process_bidlist(bidlist, fromaddr, gpsafe = None, timeoffset = 0, timetoslee
 
         print('Placing initial tx with gasprice', gpsafe) # DEBUG
         txhash = cancel_bid(bid, fromaddr, cancelot.utils.CANCELOTADDR, gasprice = gpsafe)
-
-        try:
-            (_, gpmax) = cancelot.utils.gasprice_range(bid)
-        except Exception as e:
-            print(e)
-            continue
-        # safeguard from giving all to miners
-        gpmax = min(gpmax, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
 
         # increase tx gas price if still within limits
         if gpsafe < gpmax:
