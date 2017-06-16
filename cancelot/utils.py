@@ -51,7 +51,7 @@ def pickle_bids(bids, starttime = None, blocknum = 0):
 
     return
 
-# TODO: get from http://ethgasstation.info/hashPowerTable.php
+# TODO: get from http://ethgasstation.info/json/price.json
 gaspricesinshannon = sorted([1, 4, 18, 20, 27, 40]) # 2017-06-14
 
 def _closest_down(num, sortedlist):
