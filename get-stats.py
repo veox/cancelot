@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# Swipe through history to get stats. Based on oneshot.py
+# Swipe through history to get stats. Based on oneshot.py.
+# Requires a "full sync" since .eth Regitrar's launch date to
+# guarantee correctness when looking up historic Deed balance.
 # Author: Noel Maersk
 # License: GPLv3. See LICENSE.txt
 
@@ -18,35 +20,39 @@ def numrange(fromnum, size):
     # magicnum -1: don't include range end
     return (fromnum, fromnum + size - 1)
 
+# counters
 nbids = {'placed': 0, 'active': 0, 'revealed': 0, 'cancelled': 0}
+# eth amount tracking
 wei =   {'placed': 0, 'active': 0, 'revealed': 0, 'cancelled': 0}
 
 def cb_handled(bid, event, eventtype, handler):
     '''Callback to track handled events.'''
 
-    pprint.pprint(event)
-
     if eventtype == cancelot.EventType.PLACED:
-        # work around scroogey BidStore - do actually get deed size
-        print('pre:', bid.deedaddr, bid.deedsize)
-        ab = event['blockNumber']
-        print('ab:', ab)
-        bid.update(web3, atblock = ab)
-        print('post:', bid.deedaddr, bid.deedsize)
-        assert(False)
-
         nbids['placed'] += 1
         nbids['active'] += 1
+
+        # work around scroogey BidStore - do actually get deed size
+        bid.update(web3, atblock = event['blockNumber'])
+
         wei['placed'] += bid.deedsize
         wei['active'] += bid.deedsize
     elif eventtype == cancelot.EventType.REVEALED:
         nbids['revealed'] += 1
         nbids['active'] -= 1
+
+        # `bid` should have pre-reveal deedsize
+        assert(bid.deedsize != 0)
+
         wei['revealed'] += bid.deedsize
         wei['active'] -= bid.deedsize
     elif eventtype == cancelot.EventType.CANCELLED:
         nbids['cancelled'] += 1
         nbids['active'] -= 1
+
+        # `bid` should have pre-cancel deedsize
+        assert(bid.deedsize != 0)
+
         wei['cancelled'] += bid.deedsize
         wei['active'] -= bid.deedsize        
 
