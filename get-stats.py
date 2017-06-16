@@ -29,8 +29,8 @@ def cb_handled(bid, event, eventtype, handler):
     '''Callback to track handled events.'''
 
     if eventtype == cancelot.EventType.PLACED:
-        nbids['placed'] += 1
         nbids['active'] += 1
+        nbids['placed'] += 1
 
         # work around scroogey BidStore - do actually get deed size
         #bid.update(web3, atblock = event['blockNumber'])
@@ -39,37 +39,36 @@ def cb_handled(bid, event, eventtype, handler):
         tx = web3.eth.getTransaction(event['transactionHash'])
         # assume the whole value is for one bid
         bid.deedsize = tx['value']
+        # convenience
+        key = (bid.bidder, bid.seal)
+        # HACK: update store for later ref
+        bids.set(key, bid)
 
-        wei['placed'] += bid.deedsize
         wei['active'] += bid.deedsize
+        wei['placed'] += bid.deedsize
     elif eventtype == cancelot.EventType.REVEALED:
-        nbids['revealed'] += 1
         nbids['active'] -= 1
+        nbids['revealed'] += 1
 
         # `bid` should have pre-reveal deedsize
-        #assert(bid.deedsize != 0)
+        assert(bid.deedsize != 0)
 
         # HACK: get deed size from reveal data (should be reliable)
         tx = web3.eth.getTransaction(event['transactionHash'])
         OFFSET = 2+8+64 # 2 for '0x', 8 for function signature, 64 for bytes(32).hex() value
-        bid.deedsize = web3.toDecimal('0x' + tx['input'][OFFSET:OFFSET+64])
+        bidsize = web3.toDecimal('0x' + tx['input'][OFFSET:OFFSET+64])
 
-        wei['revealed'] += bid.deedsize
         wei['active'] -= bid.deedsize
+        wei['revealed'] += bidsize
     elif eventtype == cancelot.EventType.CANCELLED:
-        nbids['cancelled'] += 1
         nbids['active'] -= 1
+        nbids['cancelled'] += 1
 
-        pprint(nbids)
-        pprint(wei)
-
-        pprint.pprint(bid)
-        pprint.pprint(event)
         # `bid` should have pre-cancel deedsize
         assert(bid.deedsize != 0)
 
+        wei['active'] -= bid.deedsize
         wei['cancelled'] += bid.deedsize
-        wei['active'] -= bid.deedsize        
 
     return
 
