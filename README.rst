@@ -150,12 +150,15 @@ On block 3648565:
 
 https://etherscan.io/tx/0x6e032eed213f1a641af8cdb7fd3770984010a38c04f6c06e393b03dfca30a80d
 
-First reveal?..
-^^^^^^^^^^^^^^^
+First reveal
+^^^^^^^^^^^^
+
+https://etherscan.io/tx/0x9d8877e4c09e5de9fb319f228a94bf80bdf9706a0ee914a2f8e2609707e61665
 
 .. code-block::
 
    Bid from 0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7 with seal 0x844e77749af1a22536ebbe7fed28588cc4e82302096105f0309db00dd8c79256 added (block 3665634).
+   Bid from 0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7 with seal 0x844e77749af1a22536ebbe7fed28588cc4e82302096105f0309db00dd8c79256 revld (block 3665649).
    '0x3c12c57a05780b6e97360392ce18f1ad92fbe0a7', '0x00033095b0df8983c66c84b7ff557a5b9b4705a9e22167ae748351d6357ae98b'
 
 First cancel?..
