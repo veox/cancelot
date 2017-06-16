@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Swipe through history to get stats. Based on oneshot.py.
-# Requires a "full sync" since .eth Regitrar's launch date to
-# guarantee correctness when looking up historic Deed balance.
+# NOTE: Requires a "full sync" since .eth Regitrar's launch date
+# to guarantee correctness when looking up historic Deed balance.
+# This is worked around here. The sections are marked off with HACK.
 # Author: Noel Maersk
 # License: GPLv3. See LICENSE.txt
 
