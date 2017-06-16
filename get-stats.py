@@ -26,7 +26,10 @@ def cb_handled(bid, event, eventtype, handler):
 
     if eventtype == cancelot.EventType.PLACED:
         # work around scroogey BidStore - do actually get deed size
+        print('pre:', bid.deedaddr, bid.deedsize)
         bid.update(web3)
+        print('post:', bid.deedaddr, bid.deedsize)
+        assert(False)
 
         nbids['placed'] += 1
         nbids['active'] += 1
