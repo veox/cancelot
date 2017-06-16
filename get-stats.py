@@ -33,7 +33,12 @@ def cb_handled(bid, event, eventtype, handler):
         nbids['active'] += 1
 
         # work around scroogey BidStore - do actually get deed size
-        bid.update(web3, atblock = event['blockNumber'])
+        #bid.update(web3, atblock = event['blockNumber'])
+
+        # HACK: get deed size from submitting transaction (unreliable)
+        tx = web3.eth.getTransaction(event['transactionHash'])
+        # assume the whole value is for one bid
+        bid.deedsize = tx['value']
 
         wei['placed'] += bid.deedsize
         wei['active'] += bid.deedsize
@@ -42,7 +47,12 @@ def cb_handled(bid, event, eventtype, handler):
         nbids['active'] -= 1
 
         # `bid` should have pre-reveal deedsize
-        assert(bid.deedsize != 0)
+        #assert(bid.deedsize != 0)
+
+        # HACK: get deed size from reveal data (should be reliable)
+        tx = web3.eth.getTransaction(event['transactionHash'])
+        OFFSET = 2+8+64 # 2 for '0x', 8 for function signature, 64 for bytes(32).hex() value
+        bid.deedsize = web3.toDecimal('0x' + tx['input'][OFFSET:OFFSET+64])
 
         wei['revealed'] += bid.deedsize
         wei['active'] -= bid.deedsize
@@ -50,6 +60,11 @@ def cb_handled(bid, event, eventtype, handler):
         nbids['cancelled'] += 1
         nbids['active'] -= 1
 
+        pprint(nbids)
+        pprint(wei)
+
+        pprint.pprint(bid)
+        pprint.pprint(event)
         # `bid` should have pre-cancel deedsize
         assert(bid.deedsize != 0)
 
