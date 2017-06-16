@@ -22,15 +22,15 @@ def numrange(fromnum, size):
     return (fromnum, fromnum + size - 1)
 
 # counters
-nbids = {'placed': 0, 'active': 0, 'revealed': 0, 'cancelled': 0}
+nbids = {'placed': 0, 'sealed': 0, 'revealed': 0, 'cancelled': 0}
 # eth amount tracking
-wei =   {'placed': 0, 'active': 0, 'revealed': 0, 'cancelled': 0}
+wei =   {'placed': 0, 'sealed': 0, 'revealed': 0, 'cancelled': 0}
 
 def cb_handled(bid, event, eventtype, handler):
     '''Callback to track handled events.'''
 
     if eventtype == cancelot.EventType.PLACED:
-        nbids['active'] += 1
+        nbids['sealed'] += 1
         nbids['placed'] += 1
 
         # work around scroogey BidStore - do actually get deed size
@@ -45,10 +45,10 @@ def cb_handled(bid, event, eventtype, handler):
         # HACK: update store for later ref
         bids.set(key, bid)
 
-        wei['active'] += bid.deedsize
+        wei['sealed'] += bid.deedsize
         wei['placed'] += bid.deedsize
     elif eventtype == cancelot.EventType.REVEALED:
-        nbids['active'] -= 1
+        nbids['sealed'] -= 1
         nbids['revealed'] += 1
 
         # `bid` should have pre-reveal deedsize
@@ -59,16 +59,16 @@ def cb_handled(bid, event, eventtype, handler):
         OFFSET = 2+8+64 # 2 for '0x', 8 for function signature, 64 for bytes(32).hex() value
         bidsize = web3.toDecimal('0x' + tx['input'][OFFSET:OFFSET+64])
 
-        wei['active'] -= bid.deedsize
+        wei['sealed'] -= bid.deedsize
         wei['revealed'] += bidsize
     elif eventtype == cancelot.EventType.CANCELLED:
-        nbids['active'] -= 1
+        nbids['sealed'] -= 1
         nbids['cancelled'] += 1
 
         # `bid` should have pre-cancel deedsize
         assert(bid.deedsize != 0)
 
-        wei['active'] -= bid.deedsize
+        wei['sealed'] -= bid.deedsize
         wei['cancelled'] += bid.deedsize
 
     return
