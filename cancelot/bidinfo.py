@@ -45,7 +45,11 @@ class BidInfo(object):
 
         return
 
-    def update(self, web3):
+    def update(self, web3, atblock = None):
+
+        if atblock == None:
+            atblock = web3.eth.defaultBlock
+
         # look up sealedBids[msg.sender][seal] and its balance
         retval = web3.eth.call({
             'to': utils.REGISTRAR,
@@ -54,7 +58,7 @@ class BidInfo(object):
         self.deedaddr = '0x' + retval[-40:] # 20 bytes from the end
 
         if self.deedaddr != utils.NULLADDR:
-            self.deedsize = int(web3.eth.getBalance(self.deedaddr))
+            self.deedsize = int(web3.eth.getBalance(self.deedaddr, block_identifier = atblock))
         else:
             self.deedsize = 0 # null-address is not a deed ;)
 

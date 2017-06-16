@@ -24,10 +24,14 @@ wei =   {'placed': 0, 'active': 0, 'revealed': 0, 'cancelled': 0}
 def cb_handled(bid, event, eventtype, handler):
     '''Callback to track handled events.'''
 
+    pprint.pprint(event)
+
     if eventtype == cancelot.EventType.PLACED:
         # work around scroogey BidStore - do actually get deed size
         print('pre:', bid.deedaddr, bid.deedsize)
-        bid.update(web3)
+        ab = event['blockNumber']
+        print('ab:', ab)
+        bid.update(web3, atblock = ab)
         print('post:', bid.deedaddr, bid.deedsize)
         assert(False)
 
