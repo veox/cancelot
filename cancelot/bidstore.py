@@ -8,7 +8,7 @@ from . import utils
 
 def _print_handled(bidder, seal, action, blocknum, total):
     print('Bid from', bidder, 'with seal', seal, action,
-          '(block ' + str(blocknum) + ').', 'Total:', total)
+          '(block ' + str(blocknum) + ').', 'Change:', '{:+d}'.format(total))
     return
 
 class EventType(Enum):
