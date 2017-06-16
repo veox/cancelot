@@ -24,6 +24,7 @@ class BidInfo(object):
     def display(self, web3, unit = 'finney'):
         '''Human-friendly print, multi-line.'''
 
+        # TODO: remove? and require update() be called explicitly
         # make sure printed info is as up-to-date as possible
         self.update(web3)
 

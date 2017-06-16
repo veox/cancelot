@@ -12,7 +12,7 @@ def _print_handled(bidder, seal, action, blocknum, total):
     return
 
 class EventType(Enum):
-    # TODO: some same repr()?..
+    # TODO: some sane repr()?..
     UNHANDLED = 0
     PLACED = 1
     REVEALED = 2
@@ -125,15 +125,17 @@ class BidStore(object):
         return
 
     def update(self, key: tuple):
-        '''Updates a single BidInfo to current chain state.'''
+        '''Updates a single BidInfo to current chain state. Returns pre-update BidInfo.'''
 
-        bi = self.get(key)
-        bi.update(self.web3)
+        bid = self.get(key)
+        old = copy.copy(bid)
+        bid.update(self.web3)
 
-        return
+        return old
 
+    # TODO: don't have side effect?
     def cancan(self, bythistime = None):
-        '''Returns a list of bids that can be cancelled, all the while populating their deed info.'''
+        '''Returns a list of bids that can be cancelled. Updates Deed information for those bids.'''
 
         ret = []
 
@@ -147,7 +149,7 @@ class BidStore(object):
                 # to save on IPC queries, only update if can cancel in specified period
                 if timediff >= 0:
                     key = (bidder, seal)
-                    self.update(key)
+                    _ = self.update(key)
 
                     if bidinfo.deedaddr != utils.NULLADDR:
                         ret.append(copy.copy(bidinfo))
@@ -159,7 +161,7 @@ class BidStore(object):
         return (bid.bidder, bid.seal)
 
     def _key_from_reveal_event(self, event: dict):
-        '''Reconstructs our lookup index from logged timely reveal event.'''
+        '''Reconstructs lookup key/index from logged timely reveal event.'''
 
         bidder = '0x' + event['topics'][2][-40:] # 20 bytes off the end
 
@@ -180,7 +182,7 @@ class BidStore(object):
         return (bidder, seal)
 
     def _key_from_cancel_event(self, event: dict):
-        '''Reconstructs our lookup index from logged cancellation event.'''
+        '''Reconstructs lookup key/index from logged cancellation event.'''
 
         seal = event['topics'][1] # with '0x' up front
         bidder = '0x' + event['topics'][2][-40:] # 20 bytes off the end
@@ -239,9 +241,11 @@ class BidStore(object):
 
         if bid:
             # get a separate copy
+            # NOTE: if cancelled, on-chain Deed balance is already zero!
             ret = copy.copy(bid)
 
             # clear bid object
+            # TODO: make optional?
             key = (ret.bidder, ret.seal)
             self.unset(key)
 
