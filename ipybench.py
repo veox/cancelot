@@ -100,7 +100,7 @@ def process_bidlist(bidlist, fromaddr, gpmin = None, timeoffset = 0, timetosleep
             continue
 
         if gpmin == None:
-            gpthis = web3.eth.gasPrice
+            gpthis = gprec
         else:
             gpthis = gpmin
 
