@@ -159,7 +159,7 @@ bids = cancelot.BidStore(web3)
 bids.store = bidstore
 
 now = cancelot.utils.now()
-until = now + 24*60*60
+until = now + 7*24*60*60
 
 cc = bids.cancan(until)
 
