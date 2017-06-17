@@ -116,7 +116,7 @@ def process_bidlist(bidlist, fromaddr, gpmin = None, timeoffset = 0, timetosleep
             print('Sleeping for', diff, 'seconds...') # DEBUG
             time.sleep(diff)
 
-        print('Placing initial tx with gasprice', gpmin) # DEBUG
+        print('Placing initial tx with gasprice', gpthis) # DEBUG
         txhash = cancel_bid(bid, fromaddr, cancelot.utils.CANCELOTADDR, gasprice = gpthis)
 
         # increase tx gas price if still within limits
