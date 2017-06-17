@@ -104,8 +104,8 @@ def process_bidlist(bidlist, fromaddr, gpmin = None, timeoffset = 0, timetosleep
         else:
             gpthis = gpmin
 
-        # magicnum 42: safeguard from giving all to miners
-        gpmax = min(gpmax, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
+        # magicnum 420: safeguard from giving all to miners
+        gpmax = min(gpmax, web3.toWei(420, 'shannon') + random.randint(0, 1000000))
 
         print('Next bid:')
         bid.display(web3)
