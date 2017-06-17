@@ -90,9 +90,6 @@ def one_up(txhash, gasprice = None, maxgasprice = None, sleeptime = 0):
 def process_bidlist(bidlist, fromaddr, gpmin = None, timeoffset = 0, timetosleep = 8):
     '''Runs (sequentially, synchronously) through a list of bids to cancel.'''
 
-    if gpmin == None:
-        gpmin = web3.eth.gasPrice
-
     txhashes = []
 
     for bid in bidlist:
@@ -101,17 +98,17 @@ def process_bidlist(bidlist, fromaddr, gpmin = None, timeoffset = 0, timetosleep
         except Exception as e:
             print(e)
             continue
+
+        if gpmin == None:
+            gpthis = web3.eth.gasPrice
+        else:
+            gpthis = gpmin
+
         # magicnum 42: safeguard from giving all to miners
         gpmax = min(gpmax, web3.toWei(42, 'shannon') + random.randint(0, 1000000))
 
-        if gprec * 2 < gpmin:
-            print('DEBUG gprec/gpmin:', gprec/gpmin)
-            print('Skipping bid:')
-            bid.display(web3)
-            continue
-        else:
-            print('Next bid:')
-            bid.display(web3)
+        print('Next bid:')
+        bid.display(web3)
 
         # FIXME: UGLY stalling
         diff = bid.timeexpires - cancelot.utils.now() + timeoffset
@@ -120,10 +117,10 @@ def process_bidlist(bidlist, fromaddr, gpmin = None, timeoffset = 0, timetosleep
             time.sleep(diff)
 
         print('Placing initial tx with gasprice', gpmin) # DEBUG
-        txhash = cancel_bid(bid, fromaddr, cancelot.utils.CANCELOTADDR, gasprice = gpmin)
+        txhash = cancel_bid(bid, fromaddr, cancelot.utils.CANCELOTADDR, gasprice = gpthis)
 
         # increase tx gas price if still within limits
-        if gpmin < gpmax:
+        if gpthis < gpmax:
             try:
                 txhash = one_up(txhash, maxgasprice = gpmax, sleeptime = timetosleep)
             except Exception as e:
@@ -134,13 +131,13 @@ def process_bidlist(bidlist, fromaddr, gpmin = None, timeoffset = 0, timetosleep
         # DEBUG
         tx = web3.eth.getTransaction(txhash)
         try:
-            finalgp = tx['gasPrice']
+            gpfinal = tx['gasPrice']
         except:
             print('OOPS! tx bogus!')
             print('txhash:', txhash)
-            finalgp = 42 # magicnum 42: a nice, round number
+            gpfinal = 42 # magicnum 42: a nice, round number
 
-        print('Final tx ', txhash, 'with gas price', web3.fromWei(finalgp, 'shannon'), '(shannon)')
+        print('Final tx ', txhash, 'with gas price', web3.fromWei(gpfinal, 'shannon'), '(shannon)')
 
     return txhashes
 
