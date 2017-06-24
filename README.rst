@@ -31,8 +31,7 @@ consideration being low gas price for calls.
 You can `see it at work`_ on a block explorer. While there, take a look
 `at a competitor`_, too.
 
-To calculate the success rate, divide EtherScan's shown number of
-"internal transactions" by the number of "external transactions".
+To calculate the success rate, TODO
 
 .. _see it at work: https://etherscan.io/address/0xc9c7db3c7a2e3b8aca6e6f78180f7013575392a3
 .. _at a competitor: https://etherscan.io/address/0xd343d2db4306db8cfd917b561fb2b9197e86ff40
