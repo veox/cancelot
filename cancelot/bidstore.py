@@ -18,7 +18,7 @@ class EventType(Enum):
     REVEALED = 2
     CANCELLED = 3
 
-def _cb_stub(bid: BidInfo, event = None, eventtype = EventType.UNHANDLED, hadler = None):
+def _cb_stub(bid: BidInfo, event = None, eventtype = EventType.UNHANDLED, handler = None):
     '''Event handler callback stub.'''
 
     return
