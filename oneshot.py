@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # ENS "stale bid" pickle update script, one-shot.
 # Author: Noel Maersk
-# License: GPLv3. See LICENSE.txt
+# License: AGPLv3. See LICENSE.txt
 
 import sys
 

@@ -136,7 +136,7 @@ mentioned above. This works more as an indicator.
 License
 -------
 
-Everything in this repository is licensed under GPLv3. See ``LICENSE.txt``.
+Everything in this repository is licensed under AGPLv3. See ``LICENSE.txt``.
 
 
 Trash

@@ -2,7 +2,7 @@ pragma solidity ^0.4.11;
 // Cancelot dapp on-chain component.
 // Forwards ENS .eth Registrar cancelBid(...) call if bid's Deed not yet cancelled.
 // Author:  Noel Maersk (veox)
-// License: GPLv3.
+// License: AGPLv3.
 // Sources: https://gitlab.com/veox/cancelot (Not yet available during deployment time - stay tuned!..)
 // Compile: solc 0.4.11+commit.68ef5810.Linux.g++ /w optimisations
 
